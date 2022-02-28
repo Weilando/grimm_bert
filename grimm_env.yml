@@ -1,0 +1,16 @@
+name: grimm
+
+channels:
+  - pytorch
+  - huggingface
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.8.3
+  - pytorch=1.10.2
+  - torchtext=0.11.2
+  - transformers=4.16.2
+  - scikit-learn=1.0.2
+  - jupyterlab=3.2.9
+  - matplotlib=3.5.1
