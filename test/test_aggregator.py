@@ -1,4 +1,4 @@
-import unittest
+from unittest import main, TestCase
 
 import pandas as pd
 import torch
@@ -7,7 +7,7 @@ from transformers import BatchEncoding
 import data.aggregator as da
 
 
-class TestAggregator(unittest.TestCase):
+class TestAggregator(TestCase):
     def test_gen_sorted_distinct_list(self):
         series = pd.Series([1, 0, 0])
         self.assertEqual([0, 1], da.gen_sorted_distinct_list(series))
@@ -40,4 +40,4 @@ class TestAggregator(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

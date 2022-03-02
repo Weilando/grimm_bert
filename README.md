@@ -6,3 +6,8 @@ You can use [grimm_env.yml](/grimm_env.yml) to [create a conda environment](http
 ## Tests
 
 Call `python -m unittest` in the main directory to execute all tests in [/test](/test).
+
+## Pipeline
+
+We use a pre-trained BERT model from `transformers` (Huggingface) and its according tokenizer to retrieve tokens and contextualized word-vectors from input sentences.
+After this step with `pytorch`, we use `sklearn`, `numpy` and `pandas` to apply metrics and transform data.
