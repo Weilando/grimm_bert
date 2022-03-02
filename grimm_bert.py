@@ -3,9 +3,8 @@ from argparse import ArgumentParser
 
 from transformers import BertModel, BertTokenizer
 
-from analysis.bert_tools import calc_word_vectors, encode_text
-from data.reference_aggregator import concat_word_vectors, \
-    gen_ids_for_tokens_and_references
+import analysis.bert_tools as abt
+import data.aggregator as da
 
 
 def log(message, verbose):
@@ -14,17 +13,20 @@ def log(message, verbose):
 
 
 def parse_sentences(sentences: list, model_name: str) -> tuple:
+    """ Parses 'sentences' with a tokenizer according to 'model_name'. Returns a
+    tensor with one word-vector per token in each row, and a lookup table with
+    reference-ids and word-vector-ids per token. """
     assert all([type(s) == str for s in sentences])
 
     tokenizer = BertTokenizer.from_pretrained(model_name)
     model = BertModel.from_pretrained(model_name)
 
-    encoded_sentences = [encode_text(s, tokenizer) for s in sentences]
-    word_vectors = [calc_word_vectors(e, model).squeeze(dim=0) for e in
+    encoded_sentences = [abt.encode_text(s, tokenizer) for s in sentences]
+    word_vectors = [abt.calc_word_vectors(e, model).squeeze(dim=0) for e in
                     encoded_sentences]
 
-    word_vectors = concat_word_vectors(word_vectors)
-    lookup_table = gen_ids_for_tokens_and_references(encoded_sentences)
+    word_vectors = da.concat_word_vectors(word_vectors)
+    lookup_table = da.gen_ids_for_tokens_and_references(encoded_sentences)
 
     return word_vectors, lookup_table
 
@@ -34,7 +36,7 @@ def should_print_help(args):
 
 
 def parse_arguments(args):
-    """ Creates an ArgumentParser with help messages. """
+    """ Parses arguments using an ArgumentParser with help messages. """
     parser = ArgumentParser(description="Automatic dictionary generation.")
 
     parser.add_argument('sentence', type=str, help='input sentence')
@@ -59,6 +61,9 @@ def main(args):
                                                  parsed_args.model_name)
     log(word_vectors, parsed_args.verbose)
     log(lookup_table, parsed_args.verbose)
+
+    lookup_table_reduced = da.collect_references_and_word_vectors(lookup_table)
+    log(lookup_table_reduced, parsed_args.verbose)
 
 
 if __name__ == '__main__':
