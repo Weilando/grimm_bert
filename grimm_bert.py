@@ -28,9 +28,9 @@ def parse_sentences(sentences: list, model_name: str) -> tuple:
                     encoded_sentences]
 
     word_vectors = da.concat_word_vectors(word_vectors)
-    lookup_table = da.gen_ids_for_tokens_and_references(encoded_sentences)
+    id_map = da.gen_ids_for_tokens_and_references(encoded_sentences)
 
-    return word_vectors.numpy(), lookup_table
+    return word_vectors.numpy(), id_map
 
 
 def should_print_help(args):
@@ -58,22 +58,29 @@ def parse_arguments(args):
 def main(args):
     parsed_args = parse_arguments(args)
     log(parsed_args, parsed_args.verbose)
-    sentences = ["Stay hungry, stay foolish.",  # Steve Jobs
-                 "Are you hungry?", "He is foolish from time to time."]
-    word_vectors, lookup_table = parse_sentences(sentences,
-                                                 parsed_args.model_name)
+    sentences = ["He wears a watch.", "She glances at her watch.",
+                 "He wants to watch the soccer match."]
+    word_vectors, id_map = parse_sentences(sentences, parsed_args.model_name)
     log(f"word_vectors: {word_vectors.shape}", parsed_args.verbose)
-    log(f"tokens: {lookup_table.token.count()}", parsed_args.verbose)
+    log(f"tokens: {id_map.token.count()}", parsed_args.verbose)
 
-    lookup_table_reduced = da.collect_references_and_word_vectors(lookup_table)
-    log(f"unique tokens: {lookup_table_reduced.token.count()}",
-        parsed_args.verbose)
+    id_map_reduced = da.collect_references_and_word_vectors(id_map, 'token')
+    log(f"unique tokens: {id_map_reduced.token.count()}", parsed_args.verbose)
 
     distance_matrix = pw_cos_distance(word_vectors)
     log(f"distance matrix: {distance_matrix.shape}", parsed_args.verbose)
 
-    cluster = ac.get_hierarchical_cluster(distance_matrix, max_distance=0.2)
-    log(f"cluster labels: {cluster.labels_}", parsed_args.verbose)
+    id_map_word_vector = ac.cluster_feature('word_vector_id', distance_matrix,
+                                            id_map, id_map_reduced)
+    id_map_word_vector = abt.add_decoded_tokens(id_map_word_vector,
+                                                parsed_args.model_name)
+    log(f"By word_vector_id:\n{id_map_word_vector}", parsed_args.verbose)
+
+    id_map_reference = ac.cluster_feature('reference_id', distance_matrix,
+                                          id_map, id_map_reduced)
+    id_map_reference = abt.add_decoded_tokens(id_map_reference,
+                                              parsed_args.model_name)
+    log(f"By reference_id:\n{id_map_reference}", parsed_args.verbose)
 
 
 if __name__ == '__main__':

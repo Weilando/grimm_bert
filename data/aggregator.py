@@ -1,3 +1,5 @@
+from typing import Union
+
 import pandas as pd
 import torch
 from transformers import BatchEncoding
@@ -8,12 +10,13 @@ def gen_sorted_distinct_list(series: pd.Series) -> list:
     return series.sort_values().unique().tolist()
 
 
-def collect_references_and_word_vectors(df: pd.DataFrame) -> pd.DataFrame:
+def collect_references_and_word_vectors(df: pd.DataFrame, by: Union[str, list])\
+        -> pd.DataFrame:
     """ Collects sorted, distinct lists of reference-ids and word-vector-ids per
     token. """
-    return df.groupby(by='token')\
-        .agg({'reference-id': gen_sorted_distinct_list,
-              'word-vector-id': gen_sorted_distinct_list})\
+    return df.groupby(by=by)\
+        .agg({'reference_id': gen_sorted_distinct_list,
+              'word_vector_id': gen_sorted_distinct_list})\
         .reset_index()
 
 
@@ -41,6 +44,6 @@ def gen_ids_for_tokens_and_references(encoded_sentences: list) -> pd.DataFrame:
     reference_ids = [torch.full_like(t, i) for i, t in enumerate(tokens)]
 
     df = pd.DataFrame({'token': torch.cat(tokens, dim=0).numpy(),
-                       'reference-id': torch.cat(reference_ids, dim=0).numpy()})
-    df['word-vector-id'] = range(len(df.index))
+                       'reference_id': torch.cat(reference_ids, dim=0).numpy()})
+    df['word_vector_id'] = range(len(df.index))
     return df

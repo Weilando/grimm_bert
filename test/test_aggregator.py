@@ -14,20 +14,20 @@ class TestAggregator(TestCase):
 
     def test_collect_references_and_word_vectors(self):
         df = pd.DataFrame({'token': [42, 7, 42, 42],
-                           'reference-id': [0, 0, 1, 1],
-                           'word-vector-id': [0, 1, 2, 3]})
+                           'reference_id': [0, 0, 1, 1],
+                           'word_vector_id': [0, 1, 2, 3]})
         df_expected = pd.DataFrame({'token': [7, 42],
-                                    'reference-id': [[0], [0, 1]],
-                                    'word-vector-id': [[1], [0, 2, 3]]})
-        df_result = da.collect_references_and_word_vectors(df)
+                                    'reference_id': [[0], [0, 1]],
+                                    'word_vector_id': [[1], [0, 2, 3]]})
+        df_result = da.collect_references_and_word_vectors(df, by='token')
         pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_gen_ids_for_tokens_and_references(self):
         encodings = [BatchEncoding({'input_ids': torch.tensor([[0, 3]])}),
                      BatchEncoding({'input_ids': torch.tensor([[7]])})]
         df_expected = pd.DataFrame({'token': [0, 3, 7],
-                                    'reference-id': [0, 0, 1],
-                                    'word-vector-id': [0, 1, 2]})
+                                    'reference_id': [0, 0, 1],
+                                    'word_vector_id': [0, 1, 2]})
 
         df_result = da.gen_ids_for_tokens_and_references(encodings)
         pd.testing.assert_frame_equal(df_result, df_expected)
