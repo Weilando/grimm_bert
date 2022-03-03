@@ -20,13 +20,6 @@ def collect_references_and_word_vectors(df: pd.DataFrame, by: Union[str, list])\
         .reset_index()
 
 
-def unpack_and_strip(tensor: torch.tensor) -> torch.tensor:
-    """ Removes the first dimension and omits the first and last entry. """
-    assert tensor.shape[0] == 1
-    assert len(tensor.shape) > 1
-    return tensor[0, 1:-1]
-
-
 def concat_word_vectors(word_vectors: list) -> torch.tensor:
     """ Concatenates word-vectors into a matrix. Each row is a word-vector. """
     assert all(type(v) == torch.Tensor for v in word_vectors)
@@ -35,7 +28,7 @@ def concat_word_vectors(word_vectors: list) -> torch.tensor:
     return torch.cat(word_vectors, dim=0)
 
 
-def gen_ids_for_tokens_and_references(encoded_sentences: list) -> pd.DataFrame:
+def gen_ids_for_vectors_and_references(encoded_sentences: list) -> pd.DataFrame:
     """ Generates a DataFrame with a reference-id and word-vector-id per token.
     Uses input_ids as token. """
     assert all(type(e) == BatchEncoding for e in encoded_sentences)

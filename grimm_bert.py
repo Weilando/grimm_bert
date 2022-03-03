@@ -1,3 +1,4 @@
+import logging
 import sys
 from argparse import ArgumentParser
 
@@ -7,11 +8,6 @@ from transformers import BertModel, BertTokenizer
 import analysis.bert_tools as abt
 import analysis.clustering as ac
 import data.aggregator as da
-
-
-def log(message, verbose):
-    if verbose:
-        print(message)
 
 
 def parse_sentences(sentences: list, model_name: str) -> tuple:
@@ -28,7 +24,7 @@ def parse_sentences(sentences: list, model_name: str) -> tuple:
                     encoded_sentences]
 
     word_vectors = da.concat_word_vectors(word_vectors)
-    id_map = da.gen_ids_for_tokens_and_references(encoded_sentences)
+    id_map = da.gen_ids_for_vectors_and_references(encoded_sentences)
 
     return word_vectors.numpy(), id_map
 
@@ -41,13 +37,13 @@ def parse_arguments(args):
     """ Parses arguments using an ArgumentParser with help messages. """
     parser = ArgumentParser(description="Automatic dictionary generation.")
 
-    parser.add_argument('-v', '--verbose', action='store_true', default=False,
-                        help="activate word_vectors")
+    parser.add_argument('-l', '--log', type=str, action='store', default='INFO',
+                        help="log level like INFO or WARNING, default: INFO")
     parser.add_argument('-m', '--model_name', type=str, action='store',
                         default='bert-base-cased',
                         help="name of the applied Huggingface model")
-    parser.add_argument('-p', '--p_norm', type=int, action='store', default=2,
-                        help="p-norm for the similarity matrix of word-vectors")
+    parser.add_argument('-d', '--max_dist', type=float, action='store',
+                        default=0.1, help="maximum distance for clustering")
 
     if should_print_help(args):
         parser.print_help(sys.stderr)
@@ -57,30 +53,24 @@ def parse_arguments(args):
 
 def main(args):
     parsed_args = parse_arguments(args)
-    log(parsed_args, parsed_args.verbose)
+    logging.basicConfig(level=parsed_args.log.upper(),
+                        format='%(levelname)s: %(message)s')
+
     sentences = ["He wears a watch.", "She glances at her watch.",
                  "He wants to watch the soccer match."]
     word_vectors, id_map = parse_sentences(sentences, parsed_args.model_name)
-    log(f"word_vectors: {word_vectors.shape}", parsed_args.verbose)
-    log(f"tokens: {id_map.token.count()}", parsed_args.verbose)
+    logging.info(f"Shape of word-vectors is {word_vectors.shape}.")
 
     id_map_reduced = da.collect_references_and_word_vectors(id_map, 'token')
-    log(f"unique tokens: {id_map_reduced.token.count()}", parsed_args.verbose)
+    logging.info(f"Number of unique tokens is {id_map_reduced.token.count()}.")
 
     distance_matrix = pw_cos_distance(word_vectors)
-    log(f"distance matrix: {distance_matrix.shape}", parsed_args.verbose)
 
-    id_map_word_vector = ac.cluster_feature('word_vector_id', distance_matrix,
-                                            id_map, id_map_reduced)
-    id_map_word_vector = abt.add_decoded_tokens(id_map_word_vector,
-                                                parsed_args.model_name)
-    log(f"By word_vector_id:\n{id_map_word_vector}", parsed_args.verbose)
-
-    id_map_reference = ac.cluster_feature('reference_id', distance_matrix,
-                                          id_map, id_map_reduced)
-    id_map_reference = abt.add_decoded_tokens(id_map_reference,
-                                              parsed_args.model_name)
-    log(f"By reference_id:\n{id_map_reference}", parsed_args.verbose)
+    dictionary = ac.cluster_vectors_per_token(distance_matrix, id_map,
+                                              id_map_reduced,
+                                              parsed_args.max_distance)
+    dictionary = abt.add_decoded_tokens(dictionary, parsed_args.model_name)
+    print(f"Dictionary for max_dist={parsed_args.max_dist}:\n{dictionary}")
 
 
 if __name__ == '__main__':

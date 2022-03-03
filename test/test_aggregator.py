@@ -22,14 +22,14 @@ class TestAggregator(TestCase):
         df_result = da.collect_references_and_word_vectors(df, by='token')
         pd.testing.assert_frame_equal(df_result, df_expected)
 
-    def test_gen_ids_for_tokens_and_references(self):
+    def test_gen_ids_for_vectors_and_references(self):
         encodings = [BatchEncoding({'input_ids': torch.tensor([[0, 3]])}),
                      BatchEncoding({'input_ids': torch.tensor([[7]])})]
         df_expected = pd.DataFrame({'token': [0, 3, 7],
                                     'reference_id': [0, 0, 1],
                                     'word_vector_id': [0, 1, 2]})
 
-        df_result = da.gen_ids_for_tokens_and_references(encodings)
+        df_result = da.gen_ids_for_vectors_and_references(encodings)
         pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_concat_word_vectors(self):
