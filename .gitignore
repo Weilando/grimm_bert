@@ -5,3 +5,8 @@
 
 # IntelliJ
 .idea
+
+# Results
+*/results
+results/*.npz
+results/*.pkl

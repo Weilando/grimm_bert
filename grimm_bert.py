@@ -1,5 +1,7 @@
 import logging
+import os
 import sys
+import time
 from argparse import ArgumentParser
 
 from sklearn.metrics.pairwise import cosine_distances as pw_cos_distance
@@ -8,6 +10,10 @@ from transformers import BertModel, BertTokenizer
 import analysis.bert_tools as abt
 import analysis.clustering as ac
 import data.aggregator as da
+import data.result_handler as rh
+
+current_path = os.path.dirname(os.path.abspath(__file__))
+os.chdir(current_path)
 
 
 def parse_sentences(sentences: list, model_name: str) -> tuple:
@@ -36,6 +42,9 @@ def should_print_help(args):
 def parse_arguments(args):
     """ Parses arguments using an ArgumentParser with help messages. """
     parser = ArgumentParser(description="Automatic dictionary generation.")
+
+    parser.add_argument('results_path', type=str, default=None,
+                        help="relative path from project-root to result-files")
 
     parser.add_argument('-l', '--log', type=str, action='store', default='INFO',
                         help="log level like INFO or WARNING, default: INFO")
@@ -68,9 +77,14 @@ def main(args):
 
     dictionary = ac.cluster_vectors_per_token(distance_matrix, id_map,
                                               id_map_reduced,
-                                              parsed_args.max_distance)
+                                              parsed_args.max_dist)
     dictionary = abt.add_decoded_tokens(dictionary, parsed_args.model_name)
     print(f"Dictionary for max_dist={parsed_args.max_dist}:\n{dictionary}")
+
+    save_time = time.strftime("%Y_%m_%d-%H_%M_%S", time.localtime())
+    rh.save_results(save_time, parsed_args.results_path, distance_matrix,
+                    dictionary)
+    logging.info(f"Saved results at {parsed_args.results_path}/{save_time}*.")
 
 
 if __name__ == '__main__':
