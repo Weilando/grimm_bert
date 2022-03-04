@@ -1,7 +1,13 @@
 # Grimm BERT
 
 This framework provides experiments for my master thesis about automatic dictionary generation.
+
+## Setup
+
 You can use [grimm_env.yml](/grimm_env.yml) to [create a conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file) with all necessary python packages.
+
+Run `python download_bert.py` to cache a HuggingFace model in [/models](/models).
+Its option `-h` explains additional arguments, e.g., for different models.
 
 ## Tests
 

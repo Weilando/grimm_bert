@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 import time
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 
 from sklearn.metrics.pairwise import cosine_distances as pw_cos_distance
 from transformers import BertModel, BertTokenizer
@@ -39,17 +39,18 @@ def should_print_help(args):
     return len(args) < 1
 
 
-def parse_arguments(args):
+def parse_arguments(args) -> Namespace:
     """ Parses arguments using an ArgumentParser with help messages. """
-    parser = ArgumentParser(description="Automatic dictionary generation.")
+    parser = ArgumentParser(description="Automatic dictionary generation.",
+                            formatter_class=ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('results_path', type=str, default=None,
                         help="relative path from project-root to result-files")
 
     parser.add_argument('-l', '--log', type=str, action='store', default='INFO',
-                        help="log level like INFO or WARNING, default: INFO")
+                        help="log level like INFO or WARNING")
     parser.add_argument('-m', '--model_name', type=str, action='store',
-                        default='bert-base-cased',
+                        default='./models/bert-base-cased/',
                         help="name of the applied Huggingface model")
     parser.add_argument('-d', '--max_dist', type=float, action='store',
                         default=0.1, help="maximum distance for clustering")
