@@ -5,7 +5,6 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 
 from transformers import BertTokenizer, BertModel
 
-
 current_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_path)
 

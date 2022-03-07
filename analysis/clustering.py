@@ -16,7 +16,7 @@ def extract_sub_matrix(square_matrix: np.ndarray, indices: list) -> np.ndarray:
     return selected_rows[:, indices]
 
 
-def get_hierarchical_cluster(distance_matrix: np.ndarray, max_distance: float)\
+def get_hierarchical_cluster(distance_matrix: np.ndarray, max_distance: float) \
         -> np.ndarray:
     """ Generates a hierarchical clustering for rows of 'distance_matrix'.
     'max_dist' is the maximum allowed distance for the same cluster. """
@@ -26,7 +26,7 @@ def get_hierarchical_cluster(distance_matrix: np.ndarray, max_distance: float)\
 
     return AgglomerativeClustering(n_clusters=None, compute_distances=False,
                                    affinity='precomputed', linkage='single',
-                                   distance_threshold=max_distance)\
+                                   distance_threshold=max_distance) \
         .fit_predict(distance_matrix)
 
 
@@ -43,5 +43,5 @@ def cluster_vectors_per_token(distance_matrix: np.ndarray, id_map: pd.DataFrame,
         meaning = get_hierarchical_cluster(sub_distance_matrix, max_distance)
         id_map.loc[id_map.token == row.token, 'meaning_label'] = meaning
 
-    return da.collect_references_and_word_vectors(id_map,
-                                                  by=['token', 'meaning_label'])
+    return da.agg_references_and_word_vectors(id_map,
+                                              by=['token', 'meaning_label'])

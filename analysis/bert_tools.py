@@ -21,10 +21,10 @@ def add_decoded_tokens(df: pd.DataFrame, model_name: str) -> pd.DataFrame:
     return df
 
 
-def calc_word_vectors(encoded_text: BatchEncoding, model: BertModel)\
+def calc_word_vectors(encoded_text: BatchEncoding, model: BertModel) \
         -> torch.tensor:
     """ Calculates the word vectors for 'encoded_text'. The output has shape
     [1, n, 768] for BERT and a text with n tokens. """
     with torch.no_grad():
-        return model(**encoded_text, output_hidden_states=True)\
+        return model(**encoded_text, output_hidden_states=True) \
             .last_hidden_state

@@ -12,14 +12,14 @@ class TestAggregator(TestCase):
         series = pd.Series([1, 0, 0])
         self.assertEqual([0, 1], da.gen_sorted_distinct_list(series))
 
-    def test_collect_references_and_word_vectors(self):
+    def test_agg_references_and_word_vectors(self):
         df = pd.DataFrame({'token': [42, 7, 42, 42],
                            'reference_id': [0, 0, 1, 1],
                            'word_vector_id': [0, 1, 2, 3]})
         df_expected = pd.DataFrame({'token': [7, 42],
                                     'reference_id': [[0], [0, 1]],
                                     'word_vector_id': [[1], [0, 2, 3]]})
-        df_result = da.collect_references_and_word_vectors(df, by='token')
+        df_result = da.agg_references_and_word_vectors(df, by='token')
         pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_gen_ids_for_vectors_and_references(self):

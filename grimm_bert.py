@@ -71,7 +71,7 @@ def main(args):
     word_vectors, id_map = parse_sentences(sentences, parsed_args.model_name)
     logging.info(f"Shape of word-vectors is {word_vectors.shape}.")
 
-    id_map_reduced = da.collect_references_and_word_vectors(id_map, 'token')
+    id_map_reduced = da.agg_references_and_word_vectors(id_map, 'token')
     logging.info(f"Number of unique tokens is {id_map_reduced.token.count()}.")
 
     distance_matrix = pw_cos_distance(word_vectors)

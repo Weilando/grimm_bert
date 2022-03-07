@@ -10,13 +10,13 @@ def gen_sorted_distinct_list(series: pd.Series) -> list:
     return series.sort_values().unique().tolist()
 
 
-def collect_references_and_word_vectors(df: pd.DataFrame, by: Union[str, list])\
+def agg_references_and_word_vectors(df: pd.DataFrame, by: Union[str, list]) \
         -> pd.DataFrame:
     """ Collects sorted, distinct lists of reference-ids and word-vector-ids per
     token. """
-    return df.groupby(by=by)\
+    return df.groupby(by=by) \
         .agg({'reference_id': gen_sorted_distinct_list,
-              'word_vector_id': gen_sorted_distinct_list})\
+              'word_vector_id': gen_sorted_distinct_list}) \
         .reset_index()
 
 
