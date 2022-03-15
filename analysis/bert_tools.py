@@ -1,15 +1,30 @@
+import logging
+import os
+
 import pandas as pd
 import torch
 from transformers import BertTokenizer, BatchEncoding, BertModel
 
 
-def tokenize_text_log(text: str, tokenizer: BertTokenizer) -> None:
-    tokenized_text = encode_text(text, tokenizer)
-    print(f"Tokenized input: {tokenizer.tokenize(text)}")
-    print(f"Input tensor: {tokenized_text.input_ids}")
+def should_download_model(model_name: str, model_cache_path: str) -> bool:
+    """ Indicates if the model cache is not present yet. """
+    return not os.path.exists(os.path.join(model_name, model_cache_path))
+
+
+def download_and_cache_model(model_name: str, model_cache_path: str) -> None:
+    """ Downloads the Huggingface model and tokenizer for 'model_name' and saves
+    them in directory 'model_name' at 'cache_path'. """
+    tokenizer = BertTokenizer.from_pretrained(model_name)
+    model = BertModel.from_pretrained(model_name)
+
+    cache_location = os.path.join(model_cache_path, model_name)
+    tokenizer.save_pretrained(cache_location)
+    model.save_pretrained(cache_location)
+    logging.info(f"Cached model and tokenizer at {model_cache_path}.")
 
 
 def encode_text(text: str, tokenizer: BertTokenizer) -> BatchEncoding:
+    """ Tokenizes 'text' with 'tokenizer' as torch.tensors. """
     return tokenizer(text, return_tensors='pt')
 
 

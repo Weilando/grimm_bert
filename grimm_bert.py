@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 import time
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 from sklearn.metrics.pairwise import cosine_distances as pw_cos_distance
 from transformers import BertModel, BertTokenizer
@@ -14,6 +14,11 @@ import data.result_handler as rh
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_path)
+
+DEFAULT_LOG_LEVEL = 'INFO'
+DEFAULT_MODEL_CACHE_PATH = './model_cache'
+DEFAULT_MODEL_NAME = 'bert-base-cased'
+DEFAULT_MAX_CLUSTER_DISTANCE = 0.1
 
 
 def parse_sentences(sentences: list, model_name: str) -> tuple:
@@ -35,36 +40,39 @@ def parse_sentences(sentences: list, model_name: str) -> tuple:
     return word_vectors.numpy(), id_map
 
 
-def should_print_help(args):
-    return len(args) < 1
+def build_argument_parser() -> ArgumentParser:
+    """ Builds an ArgumentParser with help messages. """
+    p = ArgumentParser(description="Automatic dictionary generation.",
+                       formatter_class=ArgumentDefaultsHelpFormatter)
 
+    p.add_argument('results_path', type=str, default=None,
+                   help="relative path from project root to result files")
 
-def parse_arguments(args) -> Namespace:
-    """ Parses arguments using an ArgumentParser with help messages. """
-    parser = ArgumentParser(description="Automatic dictionary generation.",
-                            formatter_class=ArgumentDefaultsHelpFormatter)
+    p.add_argument('-l', '--log', type=str, action='store',
+                   default=DEFAULT_LOG_LEVEL, help="logging level")
+    p.add_argument('-m', '--model_name', type=str, action='store',
+                   default=DEFAULT_MODEL_NAME,
+                   help="name of the Huggingface model")
+    p.add_argument('-c', '--model_cache', type=str, action='store',
+                   default=DEFAULT_MODEL_CACHE_PATH,
+                   help="relative path from project root to model files")
+    p.add_argument('-d', '--max_dist', type=float, action='store',
+                   default=DEFAULT_MAX_CLUSTER_DISTANCE,
+                   help="maximum distance for clustering")
 
-    parser.add_argument('results_path', type=str, default=None,
-                        help="relative path from project-root to result-files")
-
-    parser.add_argument('-l', '--log', type=str, action='store', default='INFO',
-                        help="log level like INFO or WARNING")
-    parser.add_argument('-m', '--model_name', type=str, action='store',
-                        default='./models/bert-base-cased/',
-                        help="name of the applied Huggingface model")
-    parser.add_argument('-d', '--max_dist', type=float, action='store',
-                        default=0.1, help="maximum distance for clustering")
-
-    if should_print_help(args):
-        parser.print_help(sys.stderr)
-        sys.exit()
-    return parser.parse_args(args)
+    return p
 
 
 def main(args):
-    parsed_args = parse_arguments(args)
+    argument_parser = build_argument_parser()
+    parsed_args = argument_parser.parse_args(args)
     logging.basicConfig(level=parsed_args.log.upper(),
                         format='%(levelname)s: %(message)s')
+
+    if abt.should_download_model(parsed_args.model_name,
+                                 parsed_args.model_cache_path):
+        abt.download_and_cache_model(parsed_args.model_name,
+                                     parsed_args.model_cache_path)
 
     sentences = ["He wears a watch.", "She glances at her watch.",
                  "He wants to watch the soccer match."]
