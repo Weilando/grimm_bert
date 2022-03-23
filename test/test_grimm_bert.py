@@ -38,7 +38,7 @@ class TestGrimmBert(TestCase):
         self.assertEqual(parsed_args.results_path, 'results_path')
         self.assertEqual(parsed_args.log, gb.DEFAULT_LOG_LEVEL)
         self.assertEqual(parsed_args.model_name, gb.DEFAULT_MODEL_NAME)
-        self.assertEqual(parsed_args.model_cache, gb.DEFAULT_MODEL_CACHE_PATH)
+        self.assertEqual(parsed_args.model_cache, gb.DEFAULT_MODEL_CACHE_DIR)
         self.assertEqual(parsed_args.max_dist, gb.DEFAULT_MAX_CLUSTER_DISTANCE)
 
 

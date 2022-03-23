@@ -1,7 +1,7 @@
 import os
 from tempfile import TemporaryDirectory
 from unittest import main, TestCase
-from unittest import mock
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -10,39 +10,39 @@ import data.result_handler as rh
 
 
 class TestResultHandler(TestCase):
-    def test_add_and_get_absolute_path(self):
+    @patch('data.result_handler.os')
+    def test_add_and_get_absolute_path(self, mocked_os):
         """ Should return the correct absolute result path. """
-        with mock.patch('data.result_handler.os') as mocked_os:
-            expected_path = "//root/results"
+        expected_path = "//root/results"
 
-            mocked_os.getcwd.return_value = "//root"
-            mocked_os.path.exists.return_value = True
-            mocked_os.path.join.return_value = expected_path
+        mocked_os.getcwd.return_value = "//root"
+        mocked_os.path.exists.return_value = True
+        mocked_os.path.join.return_value = expected_path
 
-            result_path = rh.add_and_get_abs_path("results")
+        result_path = rh.add_and_get_abs_path("results")
 
-            self.assertEqual(expected_path, result_path)
-            mocked_os.getcwd.assert_called_once()
-            mocked_os.path.exists.assert_called_once_with(expected_path)
-            mocked_os.path.join.called_once_with("//root", "results")
-            mocked_os.mkdir.assert_not_called()
+        self.assertEqual(expected_path, result_path)
+        mocked_os.getcwd.assert_called_once()
+        mocked_os.path.exists.assert_called_once_with(expected_path)
+        mocked_os.path.join.called_once_with("//root", "results")
+        mocked_os.mkdir.assert_not_called()
 
-    def test_add_and_get_absolute_path_with_mkdir(self):
+    @patch('data.result_handler.os')
+    def test_add_and_get_absolute_path_with_mkdir(self, mocked_os):
         """ Should return the correct absolute path and add the directory. """
-        with mock.patch('data.result_handler.os') as mocked_os:
-            expected_path = "//root/results"
+        expected_path = "//root/results"
 
-            mocked_os.getcwd.return_value = "//root"
-            mocked_os.path.exists.return_value = False
-            mocked_os.path.join.return_value = expected_path
+        mocked_os.getcwd.return_value = "//root"
+        mocked_os.path.exists.return_value = False
+        mocked_os.path.join.return_value = expected_path
 
-            result_path = rh.add_and_get_abs_path("results")
+        result_path = rh.add_and_get_abs_path("results")
 
-            self.assertEqual(expected_path, result_path)
-            mocked_os.getcwd.assert_called_once()
-            mocked_os.path.exists.assert_called_once_with(expected_path)
-            mocked_os.path.join.called_once_with("//root", "results")
-            mocked_os.mkdir.assert_called_once_with(expected_path)
+        self.assertEqual(expected_path, result_path)
+        mocked_os.getcwd.assert_called_once()
+        mocked_os.path.exists.assert_called_once_with(expected_path)
+        mocked_os.path.join.called_once_with("//root", "results")
+        mocked_os.mkdir.assert_called_once_with(expected_path)
 
     def test_gen_df_file_name(self):
         self.assertEqual('name-df.pkl', rh.gen_df_file_name('name'))
