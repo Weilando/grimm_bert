@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 import pandas as pd
 from nltk.corpus.reader import SemcorCorpusReader
@@ -19,7 +19,8 @@ def extract_tokens_and_senses_from_tree(tree: Tree) -> pd.DataFrame:
     return pd.DataFrame({'token': tree.leaves(), 'sense': f"{tree.label()}"})
 
 
-def extract_tokens_and_senses_from_sentence(sentence: list) -> pd.DataFrame:
+def extract_tokens_and_senses_from_sentence(
+        sentence: List[Union[Tree, List[str]]]) -> pd.DataFrame:
     """ Extracts tokens and their respective senses from 'sentence'. The sense
     can be either a str or a lemma from WordNet. """
     tokens_and_senses = [(extract_tokens_and_senses_from_tree(element)
@@ -29,7 +30,8 @@ def extract_tokens_and_senses_from_sentence(sentence: list) -> pd.DataFrame:
     return pd.concat(tokens_and_senses, ignore_index=True)
 
 
-def extract_tokens_and_senses_from_sentences(sentences: list) -> pd.DataFrame:
+def extract_tokens_and_senses_from_sentences(
+        sentences: List[List[Union[Tree, List[str]]]]) -> pd.DataFrame:
     """ Extracts all tokens and their respective senses from sentences in
     'sentences'. The sense can be either a str or a lemma from WordNet. """
     tokens_and_senses = [extract_tokens_and_senses_from_sentence(sentence)
@@ -37,6 +39,6 @@ def extract_tokens_and_senses_from_sentences(sentences: list) -> pd.DataFrame:
     return pd.concat(tokens_and_senses, ignore_index=True)
 
 
-def get_sentences_with_sense_tags(corpus_reader: SemcorCorpusReader) -> list:
+def get_sentences_with_sense_tags(corpus_reader: SemcorCorpusReader) -> List:
     """ Returns a list of sentences with semantic tags from 'corpus_reader'. """
     return corpus_reader.tagged_sents(tag='sem')

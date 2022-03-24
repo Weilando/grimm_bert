@@ -6,7 +6,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
-import data.result_handler as rh
+from data import result_handler as rh
 
 
 class TestResultHandler(TestCase):

@@ -1,17 +1,17 @@
-from typing import Union
+from typing import Union, List
 
 import pandas as pd
 import torch
 from transformers import BatchEncoding
 
 
-def gen_sorted_distinct_list(series: pd.Series) -> list:
+def gen_sorted_distinct_list(series: pd.Series) -> List:
     """ Transforms 'series' into a sorted, distinct list. """
     return series.sort_values().unique().tolist()
 
 
-def agg_references_and_word_vectors(df: pd.DataFrame, by: Union[str, list]) \
-        -> pd.DataFrame:
+def agg_references_and_word_vectors(
+        df: pd.DataFrame, by: Union[str, List[str]]) -> pd.DataFrame:
     """ Collects sorted, distinct lists of reference-ids and word-vector-ids per
     token. """
     return df.groupby(by=by) \
@@ -20,19 +20,17 @@ def agg_references_and_word_vectors(df: pd.DataFrame, by: Union[str, list]) \
         .reset_index()
 
 
-def concat_word_vectors(word_vectors: list) -> torch.tensor:
+def concat_word_vectors(word_vectors: List[torch.Tensor]) -> torch.tensor:
     """ Concatenates word-vectors into a matrix. Each row is a word-vector. """
-    assert all(type(v) == torch.Tensor for v in word_vectors)
     assert all(len(v.shape) > 1 for v in word_vectors)
 
     return torch.cat(word_vectors, dim=0)
 
 
-def gen_ids_for_vectors_and_references(encoded_sentences: list) -> pd.DataFrame:
+def gen_ids_for_vectors_and_references(encoded_sentences: List[BatchEncoding]) \
+        -> pd.DataFrame:
     """ Generates a DataFrame with a reference-id and word-vector-id per token.
     Uses input_ids as token. """
-    assert all(type(e) == BatchEncoding for e in encoded_sentences)
-
     tokens = [s.input_ids.flatten() for s in encoded_sentences]
     reference_ids = [torch.full_like(t, i) for i, t in enumerate(tokens)]
 

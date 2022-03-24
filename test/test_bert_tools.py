@@ -8,27 +8,27 @@ import pandas as pd
 import torch
 from transformers import BatchEncoding
 
-import analysis.bert_tools as abt
+from analysis import bert_tools as bt
 
 
 class TestBertTools(TestCase):
     def test_gen_model_cache_location(self):
         with TemporaryDirectory() as tmp_dir_name:
-            self.assertEqual(abt.gen_model_cache_location(tmp_dir_name, 'name'),
+            self.assertEqual(bt.gen_model_cache_location(tmp_dir_name, 'name'),
                              os.path.join(tmp_dir_name, 'name'))
 
     def test_should_cache_model(self):
         """ Should be True, because the cache directory does not exist yet. """
         with TemporaryDirectory() as tmp_dir_name:
-            cache_location = abt.gen_model_cache_location(tmp_dir_name, 'model')
-            self.assertTrue(abt.should_cache_model(cache_location))
+            cache_location = bt.gen_model_cache_location(tmp_dir_name, 'model')
+            self.assertTrue(bt.should_cache_model(cache_location))
 
     def test_should_not_cache_model(self):
         """ Should be False, because the cache directory already exists. """
         with TemporaryDirectory() as tmp_dir_name:
             os.mkdir(os.path.join(tmp_dir_name, 'model'))
-            cache_location = abt.gen_model_cache_location(tmp_dir_name, 'model')
-            self.assertFalse(abt.should_cache_model(cache_location))
+            cache_location = bt.gen_model_cache_location(tmp_dir_name, 'model')
+            self.assertFalse(bt.should_cache_model(cache_location))
 
     @patch("analysis.bert_tools.logging.info")
     def test_cache_model(self, mock_log_info):
@@ -37,7 +37,7 @@ class TestBertTools(TestCase):
         mock_tokenizer = Mock('transformers.BertTokenizer')
         mock_tokenizer.save_pretrained = Mock()
         cache_location = '/cache'
-        abt.cache_model(mock_tokenizer, mock_model, cache_location)
+        bt.cache_model(mock_tokenizer, mock_model, cache_location)
 
         mock_tokenizer.save_pretrained.assert_called_once_with(cache_location)
         mock_model.save_pretrained.assert_called_once_with(cache_location)
@@ -50,7 +50,7 @@ class TestBertTools(TestCase):
                                   'token_type_ids': torch.zeros(3),
                                   'attention_mask': torch.ones(3)})
         mock_tokenizer.return_value = encoding
-        self.assertEqual(abt.encode_text('Hi!', mock_tokenizer), encoding)
+        self.assertEqual(bt.encode_text('Hi!', mock_tokenizer), encoding)
         mock_tokenizer.assert_called_once_with('Hi!', return_tensors='pt')
 
     @patch('transformers.BertTokenizer')
@@ -59,7 +59,7 @@ class TestBertTools(TestCase):
         df = pd.DataFrame({'token': [3, 7]})
         df_exp = pd.DataFrame({'token': [3, 7],
                                'decoded_token': ['token', 'token']})
-        df_res = abt.add_decoded_tokens(df, mock_tokenizer)
+        df_res = bt.add_decoded_tokens(df, mock_tokenizer)
         pd.testing.assert_frame_equal(df_res, df_exp)
         self.assertEqual(mock_tokenizer.decode.call_count, 2)
 
@@ -70,7 +70,7 @@ class TestBertTools(TestCase):
                                   'token_type_ids': torch.zeros(3),
                                   'attention_mask': torch.ones(3)})
 
-        res = abt.calc_word_vectors(encoding, mock_model)
+        res = bt.calc_word_vectors(encoding, mock_model)
         self.assertTrue(torch.equal(res, torch.tensor([7])))
         mock_model.assert_called_once()
 
@@ -83,9 +83,9 @@ class TestBertTools(TestCase):
                                   'attention_mask': torch.ones(3)})
         mock_tokenizer.return_value = encoding
 
-        word_vectors_res, id_map_res = abt.parse_sentences(['Hello'],
-                                                           mock_tokenizer,
-                                                           mock_model)
+        word_vectors_res, id_map_res = bt.parse_sentences(['Hello'],
+                                                          mock_tokenizer,
+                                                          mock_model)
         word_vectors_exp = np.ones((1, 2))
         id_map_exp = pd.DataFrame({'token': [101, 42, 103],
                                    'reference_id': [0, 0, 0],

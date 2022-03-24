@@ -7,10 +7,10 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from sklearn.metrics.pairwise import cosine_distances as pw_cos_distance
 from transformers import BertModel, BertTokenizer
 
-import analysis.bert_tools as abt
-import analysis.clustering as ac
-import data.aggregator as da
-import data.result_handler as rh
+from analysis import aggregator as ag
+from analysis import bert_tools as bt
+from analysis import clustering as cl
+from data import result_handler as rh
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_path)
@@ -50,35 +50,36 @@ def main(args):
     logging.basicConfig(level=parsed_args.log.upper(),
                         format='%(levelname)s: %(message)s')
 
-    model_cache_location = abt.gen_model_cache_location(parsed_args.model_cache,
-                                                        parsed_args.model_name)
-    if abt.should_cache_model(model_cache_location):
+    model_cache_location = bt.gen_model_cache_location(
+        parsed_args.model_cache, parsed_args.model_name)
+    if bt.should_cache_model(model_cache_location):
         tokenizer = BertTokenizer.from_pretrained(parsed_args.model_name)
         model = BertModel.from_pretrained(parsed_args.model_name)
-        abt.cache_model(tokenizer, model, model_cache_location)
+        bt.cache_model(tokenizer, model, model_cache_location)
     else:
         tokenizer = BertTokenizer.from_pretrained(model_cache_location)
         model = BertModel.from_pretrained(model_cache_location)
 
     sentences = ["He wears a watch.", "She glances at her watch.",
                  "He wants to watch the soccer match."]
-    word_vectors, id_map = abt.parse_sentences(sentences, tokenizer, model)
+    word_vectors, id_map = bt.parse_sentences(sentences, tokenizer,
+                                              model)
     logging.info(f"Shape of word-vectors is {word_vectors.shape}.")
 
-    id_map_reduced = da.agg_references_and_word_vectors(id_map, 'token')
+    id_map_reduced = ag.agg_references_and_word_vectors(id_map, 'token')
     logging.info(f"Number of unique tokens is {id_map_reduced.token.count()}.")
 
     distance_matrix = pw_cos_distance(word_vectors)
 
-    dictionary = ac.cluster_vectors_per_token(distance_matrix, id_map,
+    dictionary = cl.cluster_vectors_per_token(distance_matrix, id_map,
                                               id_map_reduced,
                                               parsed_args.max_dist)
-    dictionary = abt.add_decoded_tokens(dictionary, tokenizer)
+    dictionary = bt.add_decoded_tokens(dictionary, tokenizer)
     print(f"Dictionary for max_dist={parsed_args.max_dist}:\n{dictionary}")
 
     save_time = time.strftime("%Y_%m_%d-%H_%M_%S", time.localtime())
-    rh.save_results(save_time, parsed_args.results_path, distance_matrix,
-                    dictionary)
+    rh.save_results(save_time, parsed_args.results_path,
+                    distance_matrix, dictionary)
     logging.info(f"Saved results at {parsed_args.results_path}/{save_time}*.")
 
 

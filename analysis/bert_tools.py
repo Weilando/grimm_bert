@@ -1,12 +1,13 @@
 import logging
 import os
-from typing import List
+from typing import List, Tuple
 
+import numpy as np
 import pandas as pd
 import torch
 from transformers import BertTokenizer, BatchEncoding, BertModel
 
-import data.aggregator as da
+from analysis import aggregator as ag
 
 
 def should_cache_model(model_cache_location: str) -> bool:
@@ -49,7 +50,7 @@ def calc_word_vectors(encoded_text: BatchEncoding, model: BertModel) \
 
 
 def parse_sentences(sentences: List[str], tokenizer: BertTokenizer,
-                    model: BertModel) -> tuple:
+                    model: BertModel) -> Tuple[np.ndarray, pd.DataFrame]:
     """ Parses 'sentences' with 'tokenizer'. Returns a tensor with one
     word-vector per token in each row, and a lookup table with reference-ids and
     word-vector-ids per token. """
@@ -57,7 +58,7 @@ def parse_sentences(sentences: List[str], tokenizer: BertTokenizer,
     word_vectors = [calc_word_vectors(e, model).squeeze(dim=0) for e in
                     encoded_sentences]
 
-    word_vectors = da.concat_word_vectors(word_vectors)
-    id_map = da.gen_ids_for_vectors_and_references(encoded_sentences)
+    word_vectors = ag.concat_word_vectors(word_vectors)
+    id_map = ag.gen_ids_for_vectors_and_references(encoded_sentences)
 
     return word_vectors.numpy(), id_map

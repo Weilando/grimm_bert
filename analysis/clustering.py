@@ -1,15 +1,18 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
 
-import data.aggregator as da
+from analysis import aggregator as ag
 
 
 def is_square_matrix(matrix: np.ndarray) -> bool:
     return len(matrix.shape) == 2 and matrix.shape[0] == matrix.shape[1]
 
 
-def extract_sub_matrix(square_matrix: np.ndarray, indices: list) -> np.ndarray:
+def extract_sub_matrix(square_matrix: np.ndarray, indices: List[int]) \
+        -> np.ndarray:
     """ Picks the entries from 'square_matrix' that 'indices' refers to. """
     assert is_square_matrix(square_matrix)
     selected_rows = square_matrix[indices]
@@ -43,5 +46,5 @@ def cluster_vectors_per_token(distance_matrix: np.ndarray, id_map: pd.DataFrame,
         meaning = get_hierarchical_cluster(sub_distance_matrix, max_distance)
         id_map.loc[id_map.token == row.token, 'meaning_label'] = meaning
 
-    return da.agg_references_and_word_vectors(id_map,
-                                              by=['token', 'meaning_label'])
+    return ag.agg_references_and_word_vectors(
+        id_map, by=['token', 'meaning_label'])

@@ -5,7 +5,7 @@ import pandas as pd
 from nltk.corpus import wordnet as wn
 from nltk.tree.tree import Tree
 
-import data.dataset_handler as dh
+from data import dataset_handler as dh
 
 
 class TestDatasetHandler(TestCase):
