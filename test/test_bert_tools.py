@@ -46,15 +46,30 @@ class TestBertTools(TestCase):
 
         word_vectors_res, id_map_res = bt.parse_sentences(
             ['Hello'], mock_tokenizer, indexer, mock_model)
-        word_vectors_exp = np.ones((3, 2))
-        id_map_exp = pd.DataFrame({'token': ['[CLS]', 'Hello', '[SEP]'],
-                                   'reference_id': [0, 0, 0],
-                                   'word_vector_id': [0, 1, 2]})
+        word_vectors_exp = np.ones((1, 2))  # squeezed and stripped
+        id_map_exp = pd.DataFrame({'token': ['Hello'],
+                                   'reference_id': [0],
+                                   'word_vector_id': [0]})
 
         np.testing.assert_array_equal(word_vectors_res, word_vectors_exp)
         pd.testing.assert_frame_equal(id_map_res, id_map_exp)
         mock_model.assert_called_once()
         mock_tokenizer.basic_tokenizer.tokenize.assert_called_once()
+
+    def test_strip_tokenized_sentences(self):
+        tokenized_sentences = [['[CLS]', 'hi', '[SEP]'],
+                               ['[CLS]', 'hello', 'world', '[SEP]']]
+        expected = [['hi', ], ['hello', 'world']]
+        result = bt.strip_sentences(tokenized_sentences)
+        self.assertEqual(expected, result)
+
+    def test_strip_word_vector_matrix(self):
+        word_vector_matrices = [torch.tensor([[0], [1], [2]]),
+                                torch.tensor([[3], [4], [5], [6]])]
+        expected = [torch.tensor([[1]]), torch.tensor([[4], [5]])]
+        result = bt.strip_sentences(word_vector_matrices)
+        self.assertTrue(torch.equal(expected[0], result[0]))
+        self.assertTrue(torch.equal(expected[1], result[1]))
 
 
 if __name__ == '__main__':

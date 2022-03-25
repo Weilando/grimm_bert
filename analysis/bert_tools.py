@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -46,7 +46,17 @@ def parse_sentences(sentences: List[str], tokenizer: BertTokenizer,
     word_vectors = [calc_word_vectors(e, model).squeeze(dim=0) for e in
                     encoded_sentences]
 
+    tokenized_sentences = strip_sentences(tokenized_sentences)
+    word_vectors = strip_sentences(word_vectors)
+
     word_vectors = ag.concat_word_vectors(word_vectors)
     id_map = ag.gen_ids_for_vectors_and_references(tokenized_sentences)
 
     return word_vectors.numpy(), id_map
+
+
+def strip_sentences(sentences: List[Union[List[str], torch.Tensor]]) \
+        -> List[Union[List[str], torch.Tensor]]:
+    """ Drop the first and last token from every sentence or the first and last
+    word vector in a matrix. Does not check if they are special tokens. """
+    return [sentence[1:-1] for sentence in sentences]
