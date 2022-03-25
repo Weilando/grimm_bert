@@ -2,7 +2,6 @@ from unittest import main, TestCase
 
 import pandas as pd
 import torch
-from transformers import BatchEncoding
 
 from analysis import aggregator as ag
 
@@ -23,13 +22,12 @@ class TestAggregator(TestCase):
         pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_gen_ids_for_vectors_and_references(self):
-        encodings = [BatchEncoding({'input_ids': torch.tensor([[0, 3]])}),
-                     BatchEncoding({'input_ids': torch.tensor([[7]])})]
-        df_expected = pd.DataFrame({'token': [0, 3, 7],
+        tokenized_sentences = [['Hello', 'world'], ['42']]
+        df_expected = pd.DataFrame({'token': ['Hello', 'world', '42'],
                                     'reference_id': [0, 0, 1],
                                     'word_vector_id': [0, 1, 2]})
 
-        df_result = ag.gen_ids_for_vectors_and_references(encodings)
+        df_result = ag.gen_ids_for_vectors_and_references(tokenized_sentences)
         pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_concat_word_vectors(self):

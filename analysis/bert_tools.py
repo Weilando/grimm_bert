@@ -1,18 +1,14 @@
-import logging
 import os
 from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
 import torch
-from transformers import BertTokenizer, BatchEncoding, BertModel
+from model.character_bert import CharacterBertModel
+from model.character_cnn_utils import CharacterIndexer
+from transformers import BertTokenizer
 
 from analysis import aggregator as ag
-
-
-def should_cache_model(model_cache_location: str) -> bool:
-    """ Indicates if the model cache is not present yet. """
-    return not os.path.exists(model_cache_location)
 
 
 def gen_model_cache_location(cache_directory: str, model_name: str) -> str:
@@ -20,45 +16,37 @@ def gen_model_cache_location(cache_directory: str, model_name: str) -> str:
     return os.path.join(cache_directory, model_name)
 
 
-def cache_model(tokenizer: BertTokenizer, model: BertModel,
-                cache_location: str) -> None:
-    """ Caches the Huggingface model and tokenizer at 'cache_location'. """
-    tokenizer.save_pretrained(cache_location)
-    model.save_pretrained(cache_location)
-    logging.info(f"Cached model and tokenizer at {cache_location}.")
+def tokenize_text(text: str, tokenizer: BertTokenizer) -> List[str]:
+    """ Tokenize 'text' and add the [CLS] and [SEP] token. """
+    tokenized_text = tokenizer.basic_tokenizer.tokenize(text)
+    return ['[CLS]', *tokenized_text, '[SEP]']
 
 
-def encode_text(text: str, tokenizer: BertTokenizer) -> BatchEncoding:
-    """ Tokenizes 'text' with 'tokenizer' as torch.tensors. """
-    return tokenizer(text, return_tensors='pt')
+def encode_text(tokens: List[str], indexer: CharacterIndexer) -> torch.Tensor:
+    """ Convert tokens into a padded tensor of character indices. """
+    return indexer.as_padded_tensor([tokens])
 
 
-def add_decoded_tokens(df: pd.DataFrame, tokenizer: BertTokenizer) \
-        -> pd.DataFrame:
-    """ Adds a column with decoded tokens to 'df' using 'tokenizer'. """
-    df['decoded_token'] = [tokenizer.decode([t]) for t in df.token]
-    return df
-
-
-def calc_word_vectors(encoded_text: BatchEncoding, model: BertModel) \
-        -> torch.tensor:
+def calc_word_vectors(encoded_text: torch.Tensor, model: CharacterBertModel) \
+        -> torch.Tensor:
     """ Calculates the word vectors for 'encoded_text'. The output has shape
-    [1, n, 768] for BERT and a text with n tokens. """
+    [1, n, 768] for a text with n tokens. """
     with torch.no_grad():
-        return model(**encoded_text, output_hidden_states=True) \
-            .last_hidden_state
+        return model(encoded_text)[0]
 
 
 def parse_sentences(sentences: List[str], tokenizer: BertTokenizer,
-                    model: BertModel) -> Tuple[np.ndarray, pd.DataFrame]:
+                    indexer: CharacterIndexer, model: CharacterBertModel) \
+        -> Tuple[np.ndarray, pd.DataFrame]:
     """ Parses 'sentences' with 'tokenizer'. Returns a tensor with one
     word-vector per token in each row, and a lookup table with reference-ids and
     word-vector-ids per token. """
-    encoded_sentences = [encode_text(s, tokenizer) for s in sentences]
+    tokenized_sentences = [tokenize_text(s, tokenizer) for s in sentences]
+    encoded_sentences = [encode_text(s, indexer) for s in tokenized_sentences]
     word_vectors = [calc_word_vectors(e, model).squeeze(dim=0) for e in
                     encoded_sentences]
 
     word_vectors = ag.concat_word_vectors(word_vectors)
-    id_map = ag.gen_ids_for_vectors_and_references(encoded_sentences)
+    id_map = ag.gen_ids_for_vectors_and_references(tokenized_sentences)
 
     return word_vectors.numpy(), id_map

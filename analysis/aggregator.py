@@ -1,8 +1,8 @@
 from typing import Union, List
 
+import numpy as np
 import pandas as pd
 import torch
-from transformers import BatchEncoding
 
 
 def gen_sorted_distinct_list(series: pd.Series) -> List:
@@ -27,14 +27,14 @@ def concat_word_vectors(word_vectors: List[torch.Tensor]) -> torch.tensor:
     return torch.cat(word_vectors, dim=0)
 
 
-def gen_ids_for_vectors_and_references(encoded_sentences: List[BatchEncoding]) \
+def gen_ids_for_vectors_and_references(tokenized_sentences: List[List[str]]) \
         -> pd.DataFrame:
-    """ Generates a DataFrame with a reference-id and word-vector-id per token.
-    Uses input_ids as token. """
-    tokens = [s.input_ids.flatten() for s in encoded_sentences]
-    reference_ids = [torch.full_like(t, i) for i, t in enumerate(tokens)]
+    """ Generates ids for references and word vectors per token. """
+    tokens = np.concatenate(tokenized_sentences, axis=0)
+    word_vector_ids = range(len(tokens))
+    ref_ids = np.concatenate(
+        [np.full_like(t, i, int) for i, t in enumerate(tokenized_sentences)],
+        axis=0)
 
-    df = pd.DataFrame({'token': torch.cat(tokens, dim=0).numpy(),
-                       'reference_id': torch.cat(reference_ids, dim=0).numpy()})
-    df['word_vector_id'] = range(len(df.index))
-    return df
+    return pd.DataFrame({'token': tokens, 'reference_id': ref_ids,
+                         'word_vector_id': word_vector_ids})

@@ -4,8 +4,10 @@ import sys
 import time
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
+from model.character_bert import CharacterBertModel
+from model.character_cnn_utils import CharacterIndexer
 from sklearn.metrics.pairwise import cosine_distances as pw_cos_distance
-from transformers import BertModel, BertTokenizer
+from transformers import BertTokenizer
 
 from analysis import aggregator as ag
 from analysis import bert_tools as bt
@@ -17,7 +19,6 @@ os.chdir(current_path)
 
 DEFAULT_LOG_LEVEL = 'INFO'
 DEFAULT_MODEL_CACHE_DIR = './model_cache'
-DEFAULT_MODEL_NAME = 'bert-base-cased'
 DEFAULT_MAX_CLUSTER_DISTANCE = 0.1
 
 
@@ -31,9 +32,6 @@ def build_argument_parser() -> ArgumentParser:
 
     p.add_argument('-l', '--log', type=str, action='store',
                    default=DEFAULT_LOG_LEVEL, help="logging level")
-    p.add_argument('-m', '--model_name', type=str, action='store',
-                   default=DEFAULT_MODEL_NAME,
-                   help="name of the Huggingface model")
     p.add_argument('-c', '--model_cache', type=str, action='store',
                    default=DEFAULT_MODEL_CACHE_DIR,
                    help="relative path from project root to model files")
@@ -50,19 +48,17 @@ def main(args):
     logging.basicConfig(level=parsed_args.log.upper(),
                         format='%(levelname)s: %(message)s')
 
-    model_cache_location = bt.gen_model_cache_location(
-        parsed_args.model_cache, parsed_args.model_name)
-    if bt.should_cache_model(model_cache_location):
-        tokenizer = BertTokenizer.from_pretrained(parsed_args.model_name)
-        model = BertModel.from_pretrained(parsed_args.model_name)
-        bt.cache_model(tokenizer, model, model_cache_location)
-    else:
-        tokenizer = BertTokenizer.from_pretrained(model_cache_location)
-        model = BertModel.from_pretrained(model_cache_location)
+    tokenizer_path = bt.gen_model_cache_location(parsed_args.model_cache,
+                                                 'bert-base-uncased')
+    tokenizer = BertTokenizer.from_pretrained(tokenizer_path)
+    indexer = CharacterIndexer()
+    model_path = bt.gen_model_cache_location(parsed_args.model_cache,
+                                             'general_character_bert')
+    model = CharacterBertModel.from_pretrained(model_path)
 
     sentences = ["He wears a watch.", "She glances at her watch.",
                  "He wants to watch the soccer match."]
-    word_vectors, id_map = bt.parse_sentences(sentences, tokenizer,
+    word_vectors, id_map = bt.parse_sentences(sentences, tokenizer, indexer,
                                               model)
     logging.info(f"Shape of word-vectors is {word_vectors.shape}.")
 
@@ -74,7 +70,6 @@ def main(args):
     dictionary = cl.cluster_vectors_per_token(distance_matrix, id_map,
                                               id_map_reduced,
                                               parsed_args.max_dist)
-    dictionary = bt.add_decoded_tokens(dictionary, tokenizer)
     print(f"Dictionary for max_dist={parsed_args.max_dist}:\n{dictionary}")
 
     save_time = time.strftime("%Y_%m_%d-%H_%M_%S", time.localtime())
