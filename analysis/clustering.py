@@ -36,8 +36,7 @@ def get_hierarchical_cluster(distance_matrix: np.ndarray, max_distance: float) \
 def cluster_vectors_per_token(distance_matrix: np.ndarray, id_map: pd.DataFrame,
                               id_map_reduced: pd.DataFrame,
                               max_distance: float) -> pd.DataFrame:
-    """ Clusters word-vectors per token and assigns unique labels for different
-    senses. Collects all references and word-vectors per token and label. """
+    """ Clusters word-vectors per token and adds unique labels for senses. """
     id_map['sense'] = None
 
     for _, row in id_map_reduced.iterrows():
@@ -47,4 +46,14 @@ def cluster_vectors_per_token(distance_matrix: np.ndarray, id_map: pd.DataFrame,
         senses = [f"{row.token}_{sense_id}" for sense_id in sense_ids]
         id_map.loc[id_map.token == row.token, 'sense'] = senses
 
-    return ag.agg_references_and_word_vectors(id_map, by=['token', 'sense'])
+    return id_map
+
+
+def reduce_dictionary(dictionary: pd.DataFrame) -> pd.DataFrame:
+    """ Collects and sorts references and word vectors per token and sense. """
+    return ag.agg_references_and_word_vectors(dictionary, by=['token', 'sense'])
+
+
+def extract_int_senses(dictionary: pd.DataFrame) -> List[int]:
+    """ Enumerates unique senses and returns an array of those sense ids. """
+    return dictionary.sense.factorize()[0].tolist()

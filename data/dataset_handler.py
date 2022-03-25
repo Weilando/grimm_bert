@@ -6,6 +6,13 @@ from nltk.tree.tree import Tree
 
 STD_SENSE = '_SENSE'
 
+TOY_SENTENCES = ["He wears a watch.", "She glances at her watch.",
+                 "He wants to watch the soccer match."]
+
+TOY_SENSES = [0, 1, 2, 3, 4,
+              5, 6, 7, 8, 3, 4,
+              0, 9, 10, 11, 12, 13, 14, 4]
+
 
 def get_tokens_and_senses_from_list(tokens: List[str], sense: str = STD_SENSE) \
         -> pd.DataFrame:
