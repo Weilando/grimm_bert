@@ -18,49 +18,51 @@ class TestDatasetHandler(TestCase):
         cls.token_tree_sub = Tree(wn.lemma('group.n.01.group'),
                                   [Tree('NE', ['Jacob', 'Grimm'])])
 
-    def test_extract_tokens_and_senses_from_list(self):
-        df_exp = pd.DataFrame({'token': ['of'], 'sense': [dh.STD_SENSE]})
-        df_res = dh.extract_tokens_and_senses_from_list(self.token_list)
+    def test_get_tokens_and_senses_from_list(self):
+        df_exp = pd.DataFrame({'token': ['of'], 'sense': ['of_S']})
+        df_res = dh.get_tokens_and_senses_from_list(self.token_list, '_S')
         pd.testing.assert_frame_equal(df_exp, df_res)
 
-    def test_extract_tokens_and_senses_from_tree_with_str(self):
-        df_exp = pd.DataFrame({'token': ['such'], 'sense': ['such.s.00']})
-        df_res = dh.extract_tokens_and_senses_from_tree(self.token_tree_str)
+    def test_get_tokens_and_senses_from_tree_with_str(self):
+        df_exp = pd.DataFrame({'token': ['such'], 'sense': ['such_such.s.00']})
+        df_res = dh.get_tokens_and_senses_from_tree(self.token_tree_str)
         pd.testing.assert_frame_equal(df_exp, df_res)
 
-    def test_extract_tokens_and_senses_from_tree_with_lemma(self):
+    def test_get_tokens_and_senses_from_tree_with_lemma(self):
         df_exp = pd.DataFrame({'token': ['said'],
-                               'sense': ["Lemma('state.v.01.say')"]})
-        df_res = dh.extract_tokens_and_senses_from_tree(self.token_tree_lem)
+                               'sense': ["said_Lemma('state.v.01.say')"]})
+        df_res = dh.get_tokens_and_senses_from_tree(self.token_tree_lem)
         pd.testing.assert_frame_equal(df_exp, df_res)
 
-    def test_extract_tokens_and_senses_from_nested_tree(self):
+    def test_get_tokens_and_senses_from_nested_tree(self):
         df_exp = pd.DataFrame({'token': ['Jacob', 'Grimm'],
-                               'sense': ["Lemma('group.n.01.group')",
-                                         "Lemma('group.n.01.group')"]})
-        df_res = dh.extract_tokens_and_senses_from_tree(self.token_tree_sub)
+                               'sense': ["Jacob_Lemma('group.n.01.group')",
+                                         "Grimm_Lemma('group.n.01.group')"]})
+        df_res = dh.get_tokens_and_senses_from_tree(self.token_tree_sub)
         pd.testing.assert_frame_equal(df_exp, df_res)
 
-    def test_extract_tokens_and_senses_from_sentence(self):
+    def test_get_tokens_and_senses_from_sentence(self):
         sentence = [self.token_list, self.token_tree_lem, self.token_tree_str,
                     self.token_tree_sub]
         df_exp = pd.DataFrame({
             'token': ['of', 'said', 'such', 'Jacob', 'Grimm'],
-            'sense': [dh.STD_SENSE, "Lemma('state.v.01.say')", 'such.s.00',
-                      "Lemma('group.n.01.group')", "Lemma('group.n.01.group')"]
+            'sense': ['of_S', "said_Lemma('state.v.01.say')", 'such_such.s.00',
+                      "Jacob_Lemma('group.n.01.group')",
+                      "Grimm_Lemma('group.n.01.group')"]
         })
-        df_res = dh.extract_tokens_and_senses_from_sentence(sentence)
+        df_res = dh.get_tokens_and_senses_from_sentence(sentence, '_S')
         pd.testing.assert_frame_equal(df_exp, df_res)
 
-    def test_extract_tokens_and_senses_from_sentences(self):
+    def test_get_tokens_and_senses_from_sentences(self):
         sentences = [[self.token_list, self.token_tree_lem],
                      [self.token_tree_str, self.token_tree_sub]]
         df_exp = pd.DataFrame({
             'token': ['of', 'said', 'such', 'Jacob', 'Grimm'],
-            'sense': [dh.STD_SENSE, "Lemma('state.v.01.say')", 'such.s.00',
-                      "Lemma('group.n.01.group')", "Lemma('group.n.01.group')"]
+            'sense': ['of_S', "said_Lemma('state.v.01.say')", 'such_such.s.00',
+                      "Jacob_Lemma('group.n.01.group')",
+                      "Grimm_Lemma('group.n.01.group')"]
         })
-        df_res = dh.extract_tokens_and_senses_from_sentences(sentences)
+        df_res = dh.get_tokens_and_senses_from_sentences(sentences, '_S')
         pd.testing.assert_frame_equal(df_exp, df_res)
 
     @patch('nltk.corpus.semcor')

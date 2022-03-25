@@ -38,3 +38,9 @@ def gen_ids_for_vectors_and_references(tokenized_sentences: List[List[str]]) \
 
     return pd.DataFrame({'token': tokens, 'reference_id': ref_ids,
                          'word_vector_id': word_vector_ids})
+
+
+def gen_sense_ids(df: pd.DataFrame) -> pd.DataFrame:
+    """ Adds unambiguous integer ids for each unique sense. """
+    df['sense_id'] = df.sense.factorize()[0]
+    return df

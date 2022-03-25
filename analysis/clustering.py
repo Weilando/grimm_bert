@@ -36,15 +36,15 @@ def get_hierarchical_cluster(distance_matrix: np.ndarray, max_distance: float) \
 def cluster_vectors_per_token(distance_matrix: np.ndarray, id_map: pd.DataFrame,
                               id_map_reduced: pd.DataFrame,
                               max_distance: float) -> pd.DataFrame:
-    """ Clusters word-vectors per token, assigns a label for different meanings.
-    Collects all references and word-vectors per token and label. """
-    id_map['meaning_label'] = None
+    """ Clusters word-vectors per token and assigns unique labels for different
+    senses. Collects all references and word-vectors per token and label. """
+    id_map['sense'] = None
 
     for _, row in id_map_reduced.iterrows():
         sub_distance_matrix = extract_sub_matrix(distance_matrix,
                                                  row.word_vector_id)
-        meaning = get_hierarchical_cluster(sub_distance_matrix, max_distance)
-        id_map.loc[id_map.token == row.token, 'meaning_label'] = meaning
+        sense_ids = get_hierarchical_cluster(sub_distance_matrix, max_distance)
+        senses = [f"{row.token}_{sense_id}" for sense_id in sense_ids]
+        id_map.loc[id_map.token == row.token, 'sense'] = senses
 
-    return ag.agg_references_and_word_vectors(
-        id_map, by=['token', 'meaning_label'])
+    return ag.agg_references_and_word_vectors(id_map, by=['token', 'sense'])

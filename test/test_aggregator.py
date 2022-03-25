@@ -36,6 +36,13 @@ class TestAggregator(TestCase):
         result = ag.concat_word_vectors(word_vectors)
         self.assertTrue(torch.equal(expected, result))
 
+    def test_gen_sense_ids(self):
+        df = pd.DataFrame({'sense': ['a', 'b', 'a']})
+        df_expected = pd.DataFrame({'sense': ['a', 'b', 'a'],
+                                    'sense_id': [0, 1, 0]})
+        df_result = ag.gen_sense_ids(df)
+        pd.testing.assert_frame_equal(df_result, df_expected)
+
 
 if __name__ == '__main__':
     main()
