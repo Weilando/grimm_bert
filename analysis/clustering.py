@@ -3,20 +3,13 @@ from typing import List
 import numpy as np
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics.pairwise import cosine_distances
 
 from analysis import aggregator as ag
 
 
 def is_square_matrix(matrix: np.ndarray) -> bool:
     return len(matrix.shape) == 2 and matrix.shape[0] == matrix.shape[1]
-
-
-def extract_sub_matrix(square_matrix: np.ndarray, indices: List[int]) \
-        -> np.ndarray:
-    """ Picks the entries from 'square_matrix' that 'indices' refers to. """
-    assert is_square_matrix(square_matrix)
-    selected_rows = square_matrix[indices]
-    return selected_rows[:, indices]
 
 
 def get_hierarchical_cluster(distance_matrix: np.ndarray, max_distance: float) \
@@ -33,16 +26,16 @@ def get_hierarchical_cluster(distance_matrix: np.ndarray, max_distance: float) \
         .fit_predict(distance_matrix)
 
 
-def cluster_vectors_per_token(distance_matrix: np.ndarray, id_map: pd.DataFrame,
-                              id_map_reduced: pd.DataFrame,
+def cluster_vectors_per_token(word_vectors: np.ndarray, id_map: pd.DataFrame,
                               max_distance: float) -> pd.DataFrame:
-    """ Clusters word-vectors per token and adds unique labels for senses. """
+    """ Clusters word-vectors per token based on their cosine distances and adds
+    unique labels for senses. """
     id_map['sense'] = None
 
+    id_map_reduced = ag.agg_references_and_word_vectors(id_map, 'token')
     for _, row in id_map_reduced.iterrows():
-        sub_distance_matrix = extract_sub_matrix(distance_matrix,
-                                                 row.word_vector_id)
-        sense_ids = get_hierarchical_cluster(sub_distance_matrix, max_distance)
+        distance_matrix = cosine_distances(word_vectors[row.word_vector_id])
+        sense_ids = get_hierarchical_cluster(distance_matrix, max_distance)
         senses = [f"{row.token}_{sense_id}" for sense_id in sense_ids]
         id_map.loc[id_map.token == row.token, 'sense'] = senses
 

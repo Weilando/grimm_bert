@@ -7,10 +7,8 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from model.character_bert import CharacterBertModel
 from model.character_cnn_utils import CharacterIndexer
 from sklearn.metrics import adjusted_rand_score
-from sklearn.metrics.pairwise import cosine_distances
 from transformers import BertTokenizer
 
-from analysis import aggregator as ag
 from analysis import bert_tools as bt
 from analysis import clustering as cl
 from data import result_handler as rh
@@ -61,21 +59,16 @@ def main(args):
     word_vectors, id_map = bt.parse_sentences(TOY_SENTENCES, tokenizer, indexer,
                                               model)
     logging.info(f"Shape of word-vectors is {word_vectors.shape}.")
+    logging.info(f"Number of unique tokens is {id_map.token.nunique()}.")
 
-    id_map_reduced = ag.agg_references_and_word_vectors(id_map, 'token')
-    logging.info(f"Number of unique tokens is {id_map_reduced.token.count()}.")
-
-    distance_matrix = cosine_distances(word_vectors)
-
-    dictionary = cl.cluster_vectors_per_token(distance_matrix, id_map,
-                                              id_map_reduced,
+    dictionary = cl.cluster_vectors_per_token(word_vectors, id_map,
                                               parsed_args.max_dist)
-    reduced_dictionary = cl.reduce_dictionary(dictionary)
-    print(f"Reduced dictionary:\n{reduced_dictionary}")
+    dictionary_reduced = cl.reduce_dictionary(dictionary)
+    logging.info(f"Dictionary:\n{dictionary_reduced}")
 
     save_time = time.strftime("%Y_%m_%d-%H_%M_%S", time.localtime())
     rh.save_results(save_time, parsed_args.results_path,
-                    distance_matrix, dictionary)
+                    word_vectors, dictionary_reduced)
     logging.info(f"Saved results at {parsed_args.results_path}/{save_time}*.")
 
     int_senses = cl.extract_int_senses(dictionary)
