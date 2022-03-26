@@ -6,11 +6,11 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
-from data import result_handler as rh
+from data import file_handler as fh
 
 
-class TestResultHandler(TestCase):
-    @patch('data.result_handler.os')
+class TestFileHandler(TestCase):
+    @patch('data.file_handler.os')
     def test_add_and_get_absolute_path(self, mocked_os):
         """ Should return the correct absolute result path. """
         expected_path = "//root/results"
@@ -19,7 +19,7 @@ class TestResultHandler(TestCase):
         mocked_os.path.exists.return_value = True
         mocked_os.path.join.return_value = expected_path
 
-        result_path = rh.add_and_get_abs_path("results")
+        result_path = fh.add_and_get_abs_path("results")
 
         self.assertEqual(expected_path, result_path)
         mocked_os.getcwd.assert_called_once()
@@ -27,7 +27,7 @@ class TestResultHandler(TestCase):
         mocked_os.path.join.called_once_with("//root", "results")
         mocked_os.mkdir.assert_not_called()
 
-    @patch('data.result_handler.os')
+    @patch('data.file_handler.os')
     def test_add_and_get_absolute_path_with_mkdir(self, mocked_os):
         """ Should return the correct absolute path and add the directory. """
         expected_path = "//root/results"
@@ -36,7 +36,7 @@ class TestResultHandler(TestCase):
         mocked_os.path.exists.return_value = False
         mocked_os.path.join.return_value = expected_path
 
-        result_path = rh.add_and_get_abs_path("results")
+        result_path = fh.add_and_get_abs_path("results")
 
         self.assertEqual(expected_path, result_path)
         mocked_os.getcwd.assert_called_once()
@@ -45,10 +45,10 @@ class TestResultHandler(TestCase):
         mocked_os.mkdir.assert_called_once_with(expected_path)
 
     def test_gen_df_file_name(self):
-        self.assertEqual('name-df.pkl', rh.gen_df_file_name('name'))
+        self.assertEqual('name-df.pkl', fh.gen_df_file_name('name'))
 
     def test_gen_matrix_file_name(self):
-        self.assertEqual('name-matrix.npz', rh.gen_matrix_file_name('name'))
+        self.assertEqual('name-matrix.npz', fh.gen_matrix_file_name('name'))
 
     def test_save_and_load_df(self):
         """ Should save a DataFrame into a pkl-file and load it afterwards. """
@@ -58,8 +58,8 @@ class TestResultHandler(TestCase):
         with TemporaryDirectory() as tmp_dir_name:
             result_file_path = os.path.join(tmp_dir_name, file_name)
 
-            rh.save_df(tmp_dir_name, file_name, df)
-            reconstructed_df = rh.load_df(tmp_dir_name, file_name)
+            fh.save_df(tmp_dir_name, file_name, df)
+            reconstructed_df = fh.load_df(tmp_dir_name, file_name)
 
             self.assertTrue(os.path.exists(result_file_path))
             self.assertTrue(os.path.isfile(result_file_path))
@@ -73,8 +73,8 @@ class TestResultHandler(TestCase):
         with TemporaryDirectory() as tmp_dir_name:
             result_file_path = os.path.join(tmp_dir_name, file_name)
 
-            rh.save_matrix(tmp_dir_name, file_name, matrix)
-            reconstructed_matrix = rh.load_matrix(tmp_dir_name, file_name)
+            fh.save_matrix(tmp_dir_name, file_name, matrix)
+            reconstructed_matrix = fh.load_matrix(tmp_dir_name, file_name)
 
             self.assertTrue(os.path.exists(result_file_path))
             self.assertTrue(os.path.isfile(result_file_path))
@@ -91,9 +91,9 @@ class TestResultHandler(TestCase):
             df_file_path = os.path.join(tmp_dir_name, df_file_name)
             matrix_file_path = os.path.join(tmp_dir_name, matrix_file_name)
 
-            rh.save_results('name', tmp_dir_name, matrix, df)
-            reconstructed_df = rh.load_df(tmp_dir_name, df_file_name)
-            reconstructed_matrix = rh.load_matrix(tmp_dir_name,
+            fh.save_results('name', tmp_dir_name, matrix, df)
+            reconstructed_df = fh.load_df(tmp_dir_name, df_file_name)
+            reconstructed_matrix = fh.load_matrix(tmp_dir_name,
                                                   matrix_file_name)
 
             self.assertTrue(os.path.exists(df_file_path))

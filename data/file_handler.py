@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-def add_and_get_abs_path(relative_path: str = '/data/results') -> os.path:
+def add_and_get_abs_path(relative_path: str = '/data') -> os.path:
     """ Generates an absolute path and add missing directories. """
     absolute_path = os.path.join(os.getcwd(), relative_path)
     if not os.path.exists(absolute_path):

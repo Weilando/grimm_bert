@@ -1,17 +1,15 @@
+import os
 from typing import List, Union
 
 import pandas as pd
-from nltk.corpus.reader import SemcorCorpusReader
+from nltk.corpus import SemcorCorpusReader, semcor
 from nltk.tree.tree import Tree
 
+import data.file_handler as fh
+
 STD_SENSE = '_SENSE'
-
-TOY_SENTENCES = ["He wears a watch.", "She glances at her watch.",
-                 "He wants to watch the soccer match."]
-
-TOY_SENSES = [0, 1, 2, 3, 4,
-              5, 6, 7, 8, 3, 4,
-              0, 9, 10, 11, 12, 13, 14, 4]
+SENTENCES_NAME = 'semcor_sentences'
+TAGGED_TOKENS_NAME = 'semcor_tagged_tokens'
 
 
 def get_tokens_and_senses_from_list(tokens: List[str], sense: str = STD_SENSE) \
@@ -57,3 +55,15 @@ def get_tokens_and_senses_from_sentences(
 def get_sentences_with_sense_tags(corpus_reader: SemcorCorpusReader) -> List:
     """ Returns a list of chunked sentences with semantic tags. """
     return corpus_reader.tagged_sents(tag='sem')
+
+
+def cache_semcor_dataset(absolute_path: os.path):
+    """ Saves raw sentences for training and all tokens with their corresponding
+    senses for evaluation at 'absolute_path'. """
+    sentences = pd.DataFrame({'sentence': semcor.sents()})
+    tagged_sentences = get_sentences_with_sense_tags(semcor)
+    tagged_tokens = get_tokens_and_senses_from_sentences(tagged_sentences)
+
+    fh.save_df(absolute_path, fh.gen_df_file_name(SENTENCES_NAME), sentences)
+    fh.save_df(absolute_path, fh.gen_df_file_name(TAGGED_TOKENS_NAME),
+               tagged_tokens)

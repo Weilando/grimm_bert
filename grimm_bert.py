@@ -11,8 +11,8 @@ from transformers import BertTokenizer
 
 from analysis import bert_tools as bt
 from analysis import clustering as cl
-from data import result_handler as rh
-from data.dataset_handler import TOY_SENSES, TOY_SENTENCES
+from data import file_handler as rh
+from data.corpus_handler import CorpusName, CorpusHandler
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_path)
@@ -27,6 +27,9 @@ def build_argument_parser() -> ArgumentParser:
     p = ArgumentParser(description="Automatic dictionary generation.",
                        formatter_class=ArgumentDefaultsHelpFormatter)
 
+    p.add_argument('corpus_name', type=str, default=None,
+                   choices=CorpusName.get_names(),
+                   help="name of the base corpus for the dictionary")
     p.add_argument('results_path', type=str, default=None,
                    help="relative path from project root to result files")
 
@@ -56,8 +59,9 @@ def main(args):
                                              'general_character_bert')
     model = CharacterBertModel.from_pretrained(model_path)
 
-    word_vectors, id_map = bt.parse_sentences(TOY_SENTENCES, tokenizer, indexer,
-                                              model)
+    corpus = CorpusHandler(parsed_args.corpus_name)
+    word_vectors, id_map = bt.parse_sentences(corpus.get_sentences_as_list(),
+                                              tokenizer, indexer, model)
     logging.info(f"Shape of word-vectors is {word_vectors.shape}.")
     logging.info(f"Number of unique tokens is {id_map.token.nunique()}.")
 
@@ -71,8 +75,9 @@ def main(args):
                     word_vectors, dictionary_reduced)
     logging.info(f"Saved results at {parsed_args.results_path}/{save_time}*.")
 
-    int_senses = cl.extract_int_senses(dictionary)
-    logging.info(f"ARI={adjusted_rand_score(TOY_SENSES, int_senses)}")
+    true_senses = cl.extract_int_senses(corpus.get_tagged_tokens())
+    dict_senses = cl.extract_int_senses(dictionary)
+    logging.info(f"ARI={adjusted_rand_score(true_senses, dict_senses)}")
 
 
 if __name__ == '__main__':
