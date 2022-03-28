@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Union
 
 import pandas as pd
 
@@ -33,7 +33,7 @@ class CorpusHandler(object):
     def get_sentences(self) -> pd.DataFrame:
         return fh.load_df(self.corpus_path, self.sentences_name)
 
-    def get_sentences_as_list(self) -> List[str]:
+    def get_sentences_as_list(self) -> Union[List[str], List[List[str]]]:
         return self.get_sentences().sentence.tolist()
 
     def get_tagged_tokens(self) -> pd.DataFrame:

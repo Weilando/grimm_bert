@@ -60,8 +60,19 @@ def main(args):
     model = CharacterBertModel.from_pretrained(model_path)
 
     corpus = CorpusHandler(parsed_args.corpus_name)
-    word_vectors, id_map = bt.parse_sentences(corpus.get_sentences_as_list(),
-                                              tokenizer, indexer, model)
+    sentences = corpus.get_sentences_as_list()
+    logging.info(f"First sentence: '{sentences[0]}'.")
+    if bt.should_tokenize(sentences):
+        sentences = bt.tokenize_sentences(sentences, tokenizer)
+        logging.info("Tokenized and lower cased sentences.")
+    else:
+        sentences = bt.lower_sentences(sentences)
+        logging.info("Lower cased sentences.")
+
+    sentences = bt.add_special_tokens_to_each(sentences)
+    logging.info("Added special tokens.")
+
+    word_vectors, id_map = bt.embed_sentences(sentences, indexer, model)
     logging.info(f"Shape of word-vectors is {word_vectors.shape}.")
     logging.info(f"Number of unique tokens is {id_map.token.nunique()}.")
 
