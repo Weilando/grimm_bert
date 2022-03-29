@@ -10,13 +10,6 @@ You can use [grimm_env.yml](/grimm_env.yml)
 to [create a conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)
 with all necessary python packages.
 
-[grimm_bert.py](/grimm_bert.py) caches models and tokenizers in [/model_cache](/model_cache), and corpora
-in [/data/corpora](/data/corpora) by default.
-
-## Tests
-
-Run `python -m unittest` in the main directory to execute all tests in [/test](/test).
-
 ## Pipeline
 
 We take a list of sentences as input, where a sentence can either be a string or a list of tokens.
@@ -29,3 +22,13 @@ We take a list of sentences as input, where a sentence can either be a string or
 5. Group all corresponding word vectors and references per token.
 6. Perform word sense disambiguation per token with hierarchical clustering based on cosine similarities.
 7. Evaluate the dictionary with the adjusted rand index (ARI).
+
+## Caches
+
+- Models and tokenizers: [/model_cache](/model_cache)
+- Corpora: [/data/corpora](/data/corpora)
+- Word vector matrix and raw `id_map` per corpus: user defined result location
+
+## Tests
+
+Run `python -m unittest` in the main directory to execute all tests in [/test](/test).

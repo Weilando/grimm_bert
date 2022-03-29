@@ -44,11 +44,29 @@ class TestFileHandler(TestCase):
         mocked_os.path.join.called_once_with("//root", "results")
         mocked_os.mkdir.assert_called_once_with(expected_path)
 
+    def test_file_does_exist(self):
+        with TemporaryDirectory() as tmp_dir_name:
+            fh.save_matrix(tmp_dir_name, 'm.npz', np.ones(1))
+            self.assertTrue(fh.does_file_exist(tmp_dir_name, 'm.npz'))
+
+    def test_file_does_not_exist(self):
+        with TemporaryDirectory() as tmp_dir_name:
+            self.assertFalse(fh.does_file_exist(tmp_dir_name, 'm.npz'))
+
     def test_gen_df_file_name(self):
         self.assertEqual('name-df.pkl', fh.gen_df_file_name('name'))
 
-    def test_gen_matrix_file_name(self):
-        self.assertEqual('name-matrix.npz', fh.gen_matrix_file_name('name'))
+    def test_gen_dictionary_file_name(self):
+        self.assertEqual('corpus_name-dist_0.12345-dictionary.pkl',
+                         fh.gen_dictionary_file_name('corpus_name', 0.12345))
+
+    def test_gen_raw_id_map_file_name(self):
+        self.assertEqual('corpus_name-raw_id_map.pkl',
+                         fh.gen_raw_id_map_file_name('corpus_name'))
+
+    def test_gen_word_vec_file_name(self):
+        self.assertEqual('corpus_name-word_vectors.npz',
+                         fh.gen_word_vec_file_name('corpus_name'))
 
     def test_save_and_load_df(self):
         """ Should save a DataFrame into a pkl-file and load it afterwards. """
@@ -78,29 +96,6 @@ class TestFileHandler(TestCase):
 
             self.assertTrue(os.path.exists(result_file_path))
             self.assertTrue(os.path.isfile(result_file_path))
-            np.testing.assert_array_equal(matrix, reconstructed_matrix)
-
-    def test_save_and_load_results(self):
-        """ Should save a matrix into a npz-file and load it afterwards. """
-        df = pd.DataFrame({'col': [42, 7]})
-        matrix = np.eye(2)
-        df_file_name = 'name-df.pkl'
-        matrix_file_name = 'name-matrix.npz'
-
-        with TemporaryDirectory() as tmp_dir_name:
-            df_file_path = os.path.join(tmp_dir_name, df_file_name)
-            matrix_file_path = os.path.join(tmp_dir_name, matrix_file_name)
-
-            fh.save_results('name', tmp_dir_name, matrix, df)
-            reconstructed_df = fh.load_df(tmp_dir_name, df_file_name)
-            reconstructed_matrix = fh.load_matrix(tmp_dir_name,
-                                                  matrix_file_name)
-
-            self.assertTrue(os.path.exists(df_file_path))
-            self.assertTrue(os.path.exists(matrix_file_path))
-            self.assertTrue(os.path.isfile(df_file_path))
-            self.assertTrue(os.path.isfile(matrix_file_path))
-            pd.testing.assert_frame_equal(df, reconstructed_df)
             np.testing.assert_array_equal(matrix, reconstructed_matrix)
 
 

@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-import time
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 from model.character_bert import CharacterBertModel
@@ -11,7 +10,7 @@ from transformers import BertTokenizer
 
 from analysis import bert_tools as bt
 from analysis import clustering as cl
-from data import file_handler as rh
+from data import file_handler as fh
 from data.corpus_handler import CorpusName, CorpusHandler
 
 current_path = os.path.dirname(os.path.abspath(__file__))
@@ -71,20 +70,32 @@ def main(args):
 
     sentences = bt.add_special_tokens_to_each(sentences)
     logging.info("Added special tokens.")
+    logging.info(f"First sentence: '{sentences[0]}'.")
 
-    word_vectors, id_map = bt.embed_sentences(sentences, indexer, model)
-    logging.info(f"Shape of word-vectors is {word_vectors.shape}.")
-    logging.info(f"Number of unique tokens is {id_map.token.nunique()}.")
+    abs_results_path = fh.add_and_get_abs_path(parsed_args.results_path)
+    word_vec_file_name = fh.gen_word_vec_file_name(parsed_args.corpus_name)
+    raw_id_map_path = fh.gen_raw_id_map_file_name(parsed_args.corpus_name)
+    if fh.does_file_exist(abs_results_path, word_vec_file_name) \
+            and fh.does_file_exist(abs_results_path, raw_id_map_path):
+        word_vectors = fh.load_matrix(abs_results_path, word_vec_file_name)
+        id_map = fh.load_df(abs_results_path, raw_id_map_path)
+        logging.info("Loaded the word vectors and raw id_map from files.")
+    else:
+        word_vectors, id_map = bt.embed_sentences(sentences, indexer, model)
+        fh.save_matrix(abs_results_path, word_vec_file_name, word_vectors)
+        fh.save_df(abs_results_path, raw_id_map_path, id_map)
+        logging.info("Calculated and saved the word vectors and raw id_map.")
+
+    logging.info(f"Shape of word vectors: {word_vectors.shape}.")
+    logging.info(f"Total number of tokens: {id_map.token.count()}.")
+    logging.info(f"Number of unique tokens: {id_map.token.nunique()}.")
 
     dictionary = cl.cluster_vectors_per_token(word_vectors, id_map,
                                               parsed_args.max_dist)
-    dictionary_reduced = cl.reduce_dictionary(dictionary)
-    logging.info(f"Dictionary:\n{dictionary_reduced}")
-
-    save_time = time.strftime("%Y_%m_%d-%H_%M_%S", time.localtime())
-    rh.save_results(save_time, parsed_args.results_path,
-                    word_vectors, dictionary_reduced)
-    logging.info(f"Saved results at {parsed_args.results_path}/{save_time}*.")
+    dictionary_file_name = fh.gen_dictionary_file_name(parsed_args.corpus_name,
+                                                       parsed_args.max_dist)
+    fh.save_df(abs_results_path, dictionary_file_name, dictionary)
+    logging.info(f"Saved dictionary.")
 
     true_senses = cl.extract_int_senses(corpus.get_tagged_tokens())
     dict_senses = cl.extract_int_senses(dictionary)
