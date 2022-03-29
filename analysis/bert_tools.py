@@ -16,6 +16,18 @@ def gen_model_cache_location(cache_directory: str, model_name: str) -> str:
     return os.path.join(cache_directory, model_name)
 
 
+def get_bert_tokenizer_from_cache(model_cache: str) -> BertTokenizer:
+    """ Loads an uncased BERT base tokenizer from 'model_cache'. """
+    tokenizer_path = gen_model_cache_location(model_cache, 'bert-base-uncased')
+    return BertTokenizer.from_pretrained(tokenizer_path)
+
+
+def get_character_bert_from_cache(model_cache: str) -> CharacterBertModel:
+    """ Loads a general CharacterBERT model from 'model_cache'. """
+    model_path = gen_model_cache_location(model_cache, 'general_character_bert')
+    return CharacterBertModel.from_pretrained(model_path)
+
+
 def lower_tokens(tokenized_sentence: List[str]) -> List[str]:
     """ Transforms all tokens to lower case. """
     return [token.lower() for token in tokenized_sentence]

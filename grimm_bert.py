@@ -3,10 +3,8 @@ import os
 import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-from model.character_bert import CharacterBertModel
 from model.character_cnn_utils import CharacterIndexer
 from sklearn.metrics import adjusted_rand_score
-from transformers import BertTokenizer
 
 from analysis import bert_tools as bt
 from analysis import clustering as cl
@@ -44,24 +42,13 @@ def build_argument_parser() -> ArgumentParser:
     return p
 
 
-def main(args):
-    argument_parser = build_argument_parser()
-    parsed_args = argument_parser.parse_args(args)
-    logging.basicConfig(level=parsed_args.log.upper(),
-                        format='%(levelname)s: %(message)s')
-
-    tokenizer_path = bt.gen_model_cache_location(parsed_args.model_cache,
-                                                 'bert-base-uncased')
-    tokenizer = BertTokenizer.from_pretrained(tokenizer_path)
-    indexer = CharacterIndexer()
-    model_path = bt.gen_model_cache_location(parsed_args.model_cache,
-                                             'general_character_bert')
-    model = CharacterBertModel.from_pretrained(model_path)
-
-    corpus = CorpusHandler(parsed_args.corpus_name)
+def main(corpus_name: CorpusName, max_dist: float, model_cache: str,
+         results_path: str):
+    corpus = CorpusHandler(corpus_name)
     sentences = corpus.get_sentences_as_list()
-    logging.info(f"First sentence: '{sentences[0]}'.")
+
     if bt.should_tokenize(sentences):
+        tokenizer = bt.get_bert_tokenizer_from_cache(model_cache)
         sentences = bt.tokenize_sentences(sentences, tokenizer)
         logging.info("Tokenized and lower cased sentences.")
     else:
@@ -72,16 +59,19 @@ def main(args):
     logging.info("Added special tokens.")
     logging.info(f"First sentence: '{sentences[0]}'.")
 
-    abs_results_path = fh.add_and_get_abs_path(parsed_args.results_path)
-    word_vec_file_name = fh.gen_word_vec_file_name(parsed_args.corpus_name)
-    raw_id_map_path = fh.gen_raw_id_map_file_name(parsed_args.corpus_name)
+    abs_results_path = fh.add_and_get_abs_path(results_path)
+    word_vec_file_name = fh.gen_word_vec_file_name(corpus_name)
+    raw_id_map_path = fh.gen_raw_id_map_file_name(corpus_name)
     if fh.does_file_exist(abs_results_path, word_vec_file_name) \
             and fh.does_file_exist(abs_results_path, raw_id_map_path):
         word_vectors = fh.load_matrix(abs_results_path, word_vec_file_name)
         id_map = fh.load_df(abs_results_path, raw_id_map_path)
         logging.info("Loaded the word vectors and raw id_map from files.")
     else:
+        indexer = CharacterIndexer()
+        model = bt.get_character_bert_from_cache(model_cache)
         word_vectors, id_map = bt.embed_sentences(sentences, indexer, model)
+
         fh.save_matrix(abs_results_path, word_vec_file_name, word_vectors)
         fh.save_df(abs_results_path, raw_id_map_path, id_map)
         logging.info("Calculated and saved the word vectors and raw id_map.")
@@ -90,10 +80,8 @@ def main(args):
     logging.info(f"Total number of tokens: {id_map.token.count()}.")
     logging.info(f"Number of unique tokens: {id_map.token.nunique()}.")
 
-    dictionary = cl.cluster_vectors_per_token(word_vectors, id_map,
-                                              parsed_args.max_dist)
-    dictionary_file_name = fh.gen_dictionary_file_name(parsed_args.corpus_name,
-                                                       parsed_args.max_dist)
+    dictionary = cl.cluster_vectors_per_token(word_vectors, id_map, max_dist)
+    dictionary_file_name = fh.gen_dictionary_file_name(corpus_name, max_dist)
     fh.save_df(abs_results_path, dictionary_file_name, dictionary)
     logging.info(f"Saved dictionary.")
 
@@ -103,4 +91,11 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    argument_parser = build_argument_parser()
+    args = argument_parser.parse_args(sys.argv[1:])
+
+    logging.basicConfig(level=args.log.upper(),
+                        format='%(levelname)s: %(message)s')
+
+    main(corpus_name=args.corpus_name, max_dist=args.max_dist,
+         model_cache=args.model_cache, results_path=args.results_path)
