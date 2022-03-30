@@ -13,10 +13,11 @@ def collect_references_and_word_vectors(
         .reset_index()
 
 
-def unpack_references_and_word_vectors(df: pd.DataFrame) -> pd.DataFrame:
-    """ Unpacks lists in the columns 'reference_id' and 'word_vector_id' and
-    sorts all rows by the word_vector_ids. """
-    return df.explode(['reference_id', 'word_vector_id']) \
+def unpack_per_word_vector(df: pd.DataFrame, to_unpack: List[str]) \
+        -> pd.DataFrame:
+    """ Unpacks lists in the columns (e.g., 'reference_id' and 'word_vector_id')
+    and sorts all rows by the word_vector_ids. """
+    return df.explode(to_unpack) \
         .infer_objects() \
         .sort_values('word_vector_id') \
         .reset_index(drop=True)
@@ -40,3 +41,17 @@ def gen_ids_for_vectors_and_references(tokenized_sentences: List[List[str]]) \
 
     return pd.DataFrame({'token': tokens, 'reference_id': ref_ids,
                          'word_vector_id': word_vector_ids})
+
+
+def extract_flat_senses(dictionary: pd.DataFrame) -> pd.DataFrame:
+    """ Extracts senses per and sorts by word_vector_id from 'dictionary'. Drops
+    other columns. """
+    return unpack_per_word_vector(dictionary[['word_vector_id', 'sense']],
+                                  ['word_vector_id', 'sense']) \
+        .set_index('word_vector_id')
+
+
+def extract_int_senses(dictionary: pd.DataFrame) -> List[int]:
+    """ Enumerates unique senses and returns an array of those sense ids.
+    Flattens and sorts word_vector_ids and senses if they are lists. """
+    return dictionary.sense.factorize()[0].tolist()

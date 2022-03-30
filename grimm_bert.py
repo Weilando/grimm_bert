@@ -88,8 +88,8 @@ def main(corpus_name: CorpusName, max_dist: float, model_cache: str,
     fh.save_df(abs_results_path, dictionary_file_name, dictionary)
     logging.info(f"Saved dictionary.")
 
-    true_senses = cl.extract_int_senses(corpus.get_tagged_tokens())
-    dict_senses = cl.extract_int_senses(cl.extract_flat_senses(dictionary))
+    true_senses = ag.extract_int_senses(corpus.get_tagged_tokens())
+    dict_senses = ag.extract_int_senses(ag.extract_flat_senses(dictionary))
     logging.info(f"ARI={adjusted_rand_score(true_senses, dict_senses)}")
 
 

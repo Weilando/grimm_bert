@@ -38,25 +38,6 @@ class TestClustering(TestCase):
                                                       max_distance=0.5)
         pd.testing.assert_frame_equal(dictionary_exp, dictionary_res)
 
-    def test_extract_flat_senses(self):
-        """ Should unpack and sort senses regarding their word_vector_ids.
-        Should drop reference_ids. """
-        dictionary = pd.DataFrame({'word_vector_id': [[1, 2], [0]],
-                                   'reference_ids': [[0, 1], [1]],
-                                   'sense': [['c', 'a'], ['b']]})
-        dictionary_exp = pd.DataFrame({'word_vector_id': [0, 1, 2],
-                                       'sense': ['b', 'c', 'a']}) \
-            .set_index('word_vector_id')
-        dictionary_res = cl.extract_flat_senses(dictionary)
-        pd.testing.assert_frame_equal(dictionary_exp, dictionary_res)
-
-    def test_extract_int_senses(self):
-        """ Should generate a unique integer labels per sense. """
-        dictionary = pd.DataFrame({'sense': ['a', 'b', 'c', 'a', 'd']})
-        id_senses_exp = [0, 1, 2, 0, 3]
-        id_senses_res = cl.extract_int_senses(dictionary)
-        self.assertEqual(id_senses_exp, id_senses_res)
-
 
 if __name__ == '__main__':
     main()
