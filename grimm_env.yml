@@ -17,4 +17,5 @@ dependencies:
       - pandas==1.3.5
       - nltk==3.7
       - scipy==1.4.1
-      - coverage
+      - jupyterlab==3.3.2
+      - coverage==6.3.2

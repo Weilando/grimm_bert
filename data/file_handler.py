@@ -1,4 +1,6 @@
+import json
 import os
+from typing import Dict
 
 import numpy as np
 import pandas as pd
@@ -31,6 +33,11 @@ def gen_dictionary_file_name(corpus_name: str, distance: float) -> str:
 def gen_raw_id_map_file_name(corpus_name: str) -> str:
     """ Generates the name for a file holding a raw id_map DataFrame. """
     return f"{corpus_name}-raw_id_map.pkl"
+
+
+def gen_stats_file_name(corpus_name: str, distance: float) -> str:
+    """ Generates the name for a file holding a dict with statistics. """
+    return f"{corpus_name}-dist_{distance}-stats.json"
 
 
 def gen_word_vec_file_name(corpus_name: str) -> str:
@@ -66,3 +73,11 @@ def save_matrix(absolute_path: os.path, file_name: str, matrix: np.ndarray):
 
     with open(file_path, "wb") as f:
         np.savez(f, m=matrix)
+
+
+def save_stats(absolute_path: os.path, file_name: str, stats: Dict):
+    """ Saves 'stats' in a json-file with 'file_name' at 'absolute_path'. """
+    file_path = os.path.join(absolute_path, file_name)
+
+    with open(file_path, "w") as f:
+        json.dump(stats, f, indent=2)

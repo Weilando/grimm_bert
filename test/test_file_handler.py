@@ -1,3 +1,4 @@
+import json
 import os
 from tempfile import TemporaryDirectory
 from unittest import main, TestCase
@@ -64,6 +65,10 @@ class TestFileHandler(TestCase):
         self.assertEqual('corpus_name-raw_id_map.pkl',
                          fh.gen_raw_id_map_file_name('corpus_name'))
 
+    def test_gen_stats_file_name(self):
+        self.assertEqual('corpus_name-dist_0.12345-stats.json',
+                         fh.gen_stats_file_name('corpus_name', 0.12345))
+
     def test_gen_word_vec_file_name(self):
         self.assertEqual('corpus_name-word_vectors.npz',
                          fh.gen_word_vec_file_name('corpus_name'))
@@ -97,6 +102,18 @@ class TestFileHandler(TestCase):
             self.assertTrue(os.path.exists(result_file_path))
             self.assertTrue(os.path.isfile(result_file_path))
             np.testing.assert_array_equal(matrix, reconstructed_matrix)
+
+    def test_save_stats(self):
+        """ Should save a dict with statistics into a json-file. """
+        stats = {'ari': 0.5}
+        file_name = 'stats.json'
+
+        with TemporaryDirectory() as tmp_dir_name:
+            fh.save_stats(tmp_dir_name, file_name, stats)
+
+            with open(os.path.join(tmp_dir_name, file_name), 'r') as stats_file:
+                reconstructed_stats = json.load(stats_file)
+                self.assertEqual(stats, reconstructed_stats)
 
 
 if __name__ == '__main__':

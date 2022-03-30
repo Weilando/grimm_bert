@@ -45,6 +45,7 @@ def build_argument_parser() -> ArgumentParser:
 
 def main(corpus_name: CorpusName, max_dist: float, model_cache: str,
          results_path: str):
+    stats = {'corpus_name': corpus_name, 'max_dist': max_dist}
     corpus = CorpusHandler(corpus_name)
     sentences = corpus.get_sentences_as_list()
 
@@ -77,9 +78,9 @@ def main(corpus_name: CorpusName, max_dist: float, model_cache: str,
         fh.save_df(abs_results_path, raw_id_map_path, id_map)
         logging.info("Calculated and saved the word vectors and raw id_map.")
 
+    stats.update(ag.count_total_and_unique(id_map, 'token'))
     logging.info(f"Shape of word vectors: {word_vectors.shape}.")
-    logging.info(f"Total number of tokens: {id_map.token.count()}.")
-    logging.info(f"Number of unique tokens: {id_map.token.nunique()}.")
+    logging.info(f"Unique token count: {stats['unique_token_count']}.")
 
     id_map = ag.collect_references_and_word_vectors(id_map, 'token')
 
@@ -88,9 +89,18 @@ def main(corpus_name: CorpusName, max_dist: float, model_cache: str,
     fh.save_df(abs_results_path, dictionary_file_name, dictionary)
     logging.info(f"Saved dictionary.")
 
+    flat_dict_senses = ag.extract_flat_senses(dictionary)
+    stats.update(ag.count_total_and_unique(flat_dict_senses, 'sense'))
+    logging.info(f"Unique sense count: {stats['unique_sense_count']}.")
+
     true_senses = ag.extract_int_senses(corpus.get_tagged_tokens())
-    dict_senses = ag.extract_int_senses(ag.extract_flat_senses(dictionary))
-    logging.info(f"ARI={adjusted_rand_score(true_senses, dict_senses)}")
+    dict_senses = ag.extract_int_senses(flat_dict_senses)
+    stats['ari'] = adjusted_rand_score(true_senses, dict_senses)
+    logging.info(f"ARI: {stats['ari']}")
+
+    stats_file_name = fh.gen_stats_file_name(corpus_name, max_dist)
+    fh.save_stats(abs_results_path, stats_file_name, stats)
+    logging.info("Saved stats.")
 
 
 if __name__ == '__main__':

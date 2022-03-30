@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Dict
 
 import numpy as np
 import pandas as pd
@@ -55,3 +55,9 @@ def extract_int_senses(dictionary: pd.DataFrame) -> List[int]:
     """ Enumerates unique senses and returns an array of those sense ids.
     Flattens and sorts word_vector_ids and senses if they are lists. """
     return dictionary.sense.factorize()[0].tolist()
+
+
+def count_total_and_unique(df: pd.DataFrame, column: str) -> Dict:
+    """ Calculates the total and distinct number of elements in 'column'. """
+    return {f"total_{column}_count": int(df[column].count()),
+            f"unique_{column}_count": int(df[column].nunique())}

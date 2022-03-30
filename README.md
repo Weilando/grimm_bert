@@ -1,8 +1,7 @@
 # Grimm BERT
 
-This framework provides experiments for my master thesis about automatic dictionary generation.
-Run [grimm_bert.py](/grimm_bert.py) to start the framework. Its `-h` option explains all possible arguments and default
-values.
+[grimm_bert.py](/grimm_bert.py) provides a pipeline for my master thesis about automatic dictionary generation. Its `-h`
+option explains all possible arguments and default values.
 
 ## Setup
 
@@ -25,9 +24,18 @@ We take a list of sentences as input, where a sentence can either be a string or
 
 ## Caches
 
+The software uses caches to enable executions in offline HPC environments and to speed up repeated calculations.
+
 - Models and tokenizers: [/model_cache](/model_cache)
 - Corpora: [/data/corpora](/data/corpora)
 - Word vector matrix and raw `id_map` per corpus: user defined result location
+
+## System Requirements
+
+Our annotated Toy corpus with three sentences can be executed on a standard computer, e.g., with a dual-core CPU and 8GB
+RAM. For the SemCor corpus, we recommend 16GB RAM and one CPU. Please note that you mainly benefit from a multicore CPU
+or GPU while calculating word vectors with CharacterBERT. As the first pipeline run caches the word vectors for reuse,
+further runs do not need multiple cores.
 
 ## Tests
 

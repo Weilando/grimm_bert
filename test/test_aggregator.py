@@ -8,6 +8,8 @@ from analysis import aggregator as ag
 
 class TestAggregator(TestCase):
     def test_collect_references_and_word_vectors(self):
+        """ Should group the DataFrame by the tokens and collect reference_ids
+        and word_vector_ids in lists. """
         df = pd.DataFrame({'token': [42, 7, 42, 42],
                            'reference_id': [0, 0, 1, 1],
                            'word_vector_id': [0, 1, 2, 3]})
@@ -18,6 +20,7 @@ class TestAggregator(TestCase):
         pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_unpack_per_word_vector(self):
+        """ Should undo the group operation and unpack the lists. """
         df = pd.DataFrame({'token': [7, 42],
                            'reference_id': [[0], [0, 1, 1]],
                            'word_vector_id': [[1], [0, 2, 3]]})
@@ -29,6 +32,8 @@ class TestAggregator(TestCase):
         pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_gen_ids_for_vectors_and_references(self):
+        """ Should generate unique integer ids for word vectors and references
+        for each token. """
         tokenized_sentences = [['Hello', 'world'], ['42']]
         df_expected = pd.DataFrame({'token': ['Hello', 'world', '42'],
                                     'reference_id': [0, 0, 1],
@@ -38,6 +43,7 @@ class TestAggregator(TestCase):
         pd.testing.assert_frame_equal(df_result, df_expected)
 
     def test_concat_word_vectors(self):
+        """ Should generate a matrix with input vectors as rows. """
         word_vectors = [torch.tensor([[1, 1], [1, 1]]), torch.tensor([[0, 0]])]
         expected = torch.tensor([[1, 1], [1, 1], [0, 0]])
         result = ag.concat_word_vectors(word_vectors)
@@ -61,6 +67,13 @@ class TestAggregator(TestCase):
         id_senses_exp = [0, 1, 2, 0, 3]
         id_senses_res = ag.extract_int_senses(dictionary)
         self.assertEqual(id_senses_exp, id_senses_res)
+
+    def test_count_total_and_unique(self):
+        """ Should generate a dict with correct statistics. """
+        df = pd.DataFrame({'a': [0, 1, 1, 0, 2],
+                           'b': [0, 0, 0, 1, 1]})
+        expected = {'total_a_count': 5, 'unique_a_count': 3}
+        self.assertEqual(expected, ag.count_total_and_unique(df, 'a'))
 
 
 if __name__ == '__main__':
