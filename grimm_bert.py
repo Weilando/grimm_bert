@@ -6,6 +6,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from model.character_cnn_utils import CharacterIndexer
 from sklearn.metrics import adjusted_rand_score
 
+from analysis import aggregator as ag
 from analysis import bert_tools as bt
 from analysis import clustering as cl
 from data import file_handler as fh
@@ -80,13 +81,15 @@ def main(corpus_name: CorpusName, max_dist: float, model_cache: str,
     logging.info(f"Total number of tokens: {id_map.token.count()}.")
     logging.info(f"Number of unique tokens: {id_map.token.nunique()}.")
 
+    id_map = ag.collect_references_and_word_vectors(id_map, 'token')
+
     dictionary = cl.cluster_vectors_per_token(word_vectors, id_map, max_dist)
     dictionary_file_name = fh.gen_dictionary_file_name(corpus_name, max_dist)
     fh.save_df(abs_results_path, dictionary_file_name, dictionary)
     logging.info(f"Saved dictionary.")
 
     true_senses = cl.extract_int_senses(corpus.get_tagged_tokens())
-    dict_senses = cl.extract_int_senses(dictionary)
+    dict_senses = cl.extract_int_senses(cl.extract_flat_senses(dictionary))
     logging.info(f"ARI={adjusted_rand_score(true_senses, dict_senses)}")
 
 

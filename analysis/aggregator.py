@@ -5,19 +5,21 @@ import pandas as pd
 import torch
 
 
-def gen_sorted_distinct_list(series: pd.Series) -> List:
-    """ Transforms 'series' into a sorted, distinct list. """
-    return series.sort_values().unique().tolist()
-
-
-def agg_references_and_word_vectors(
+def collect_references_and_word_vectors(
         df: pd.DataFrame, by: Union[str, List[str]]) -> pd.DataFrame:
-    """ Collects sorted, distinct lists of reference-ids and word-vector-ids per
-    token. """
+    """ Collects lists of reference-ids and word-vector-ids per token. """
     return df.groupby(by=by) \
-        .agg({'reference_id': gen_sorted_distinct_list,
-              'word_vector_id': gen_sorted_distinct_list}) \
+        .agg({'reference_id': list, 'word_vector_id': list}) \
         .reset_index()
+
+
+def unpack_references_and_word_vectors(df: pd.DataFrame) -> pd.DataFrame:
+    """ Unpacks lists in the columns 'reference_id' and 'word_vector_id' and
+    sorts all rows by the word_vector_ids. """
+    return df.explode(['reference_id', 'word_vector_id']) \
+        .infer_objects() \
+        .sort_values('word_vector_id') \
+        .reset_index(drop=True)
 
 
 def concat_word_vectors(word_vectors: List[torch.Tensor]) -> torch.tensor:
