@@ -20,7 +20,7 @@ def get_hierarchical_cluster(distance_matrix: np.ndarray, max_distance: float) \
     if distance_matrix.shape[0] < 2:
         return np.array([0])
 
-    return AgglomerativeClustering(n_clusters=None, compute_distances=False,
+    return AgglomerativeClustering(n_clusters=None,
                                    affinity='precomputed', linkage='single',
                                    distance_threshold=max_distance) \
         .fit_predict(distance_matrix)
