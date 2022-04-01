@@ -9,25 +9,29 @@ You can use [grimm_env.yml](/grimm_env.yml)
 to [create a conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)
 with all necessary python packages.
 
+Use [data.ToyPreprocessor](/data/toy_preprocessor.py) or [data.SemcorPreprocessor](/data/semcor_preprocessor.py) to
+generate suitable input files for the pipeline. To add a new corpus, create a subclass
+of [/data/CorpusPreprocessor](/data/corpus_preprocessor.py). You might want to tokenize sentences with an uncased
+tokenizer, e.g., `BertTokenizer.basic_tokenizer`.
+
 ## Pipeline
 
-We take a list of sentences as input, where a sentence can either be a string or a list of tokens.
+We take a list of sentences as input, where each sentence is list of str tokens.
 
-1. Tokenize sentences, if necessary.
-2. Lower case all sentences.
-3. Wrap each sentence with special tokens `[CLS]` and `[SEP]`.
-4. Calculate one contextualized word vector per token with a
+1. Lower case all sentences.
+2. Wrap each sentence with special tokens `[CLS]` and `[SEP]`.
+3. Calculate one contextualized word vector per token with a
    pre-trained [CharacterBERT](https://github.com/helboukkouri/character-bert) model.
-5. Group all corresponding word vectors and references per token.
-6. Perform word sense disambiguation per token with hierarchical clustering based on cosine similarities.
-7. Evaluate the dictionary with the adjusted rand index (ARI).
+4. Group all corresponding word vectors and references per token.
+5. Perform word sense disambiguation per token with hierarchical clustering based on cosine similarities.
+6. Evaluate the dictionary with the adjusted rand index (ARI).
 
 ## Caches
 
 The software uses caches to enable executions in offline HPC environments and to speed up repeated calculations.
 
 - Models and tokenizers: [/model_cache](/model_cache)
-- Corpora: [/data/corpora](/data/corpora)
+- Corpora: [/data/corpus_cache](/data/corpus_cache)
 - Word vector matrix and raw `id_map` per corpus: user defined result location
 
 ## System Requirements

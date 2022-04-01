@@ -52,19 +52,6 @@ class TestBertTools(TestCase):
         self.assertTrue(torch.equal(expected[0], result[0]))
         self.assertTrue(torch.equal(expected[1], result[1]))
 
-    def test_should_tokenize(self):
-        self.assertTrue(bt.should_tokenize(['Hello.', 'Hi!']))
-
-    def test_should_not_tokenize(self):
-        self.assertFalse(bt.should_tokenize([['hello', '.'], ['hi', '!']]))
-
-    @patch('transformers.BertTokenizer')
-    def test_tokenize_sentences(self, mock_tokenizer):
-        bt.tokenize_sentences(['a', 'b'], mock_tokenizer)
-        mock_tokenizer.basic_tokenizer.tokenize.assert_any_call('a')
-        mock_tokenizer.basic_tokenizer.tokenize.assert_any_call('b')
-        self.assertEqual(2, mock_tokenizer.basic_tokenizer.tokenize.call_count)
-
     def test_add_special_tokens_to_each(self):
         expected = [['[CLS]', 'a', 'b', '[SEP]'], ['[CLS]', 'c', '[SEP]']]
         result = bt.add_special_tokens_to_each([['a', 'b'], ['c']])

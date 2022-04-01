@@ -18,8 +18,8 @@ class TestCorpusHandler(TestCase):
             corpus = CorpusHandler(CorpusName.TOY, tmp_dir_name)
             self.assertEqual(CorpusName.TOY, corpus.corpus_name)
             self.assertEqual(tmp_dir_name, corpus.corpus_path)
-            self.assertEqual("toy_sentences-df.pkl", corpus.sentences_name)
-            self.assertEqual("toy_tagged_tokens-df.pkl",
+            self.assertEqual("Toy-sentences.pkl", corpus.sentences_name)
+            self.assertEqual("Toy-tagged_tokens.pkl",
                              corpus.tagged_tokens_name)
 
     def test_set_up_semcor(self):
@@ -27,23 +27,35 @@ class TestCorpusHandler(TestCase):
             corpus = CorpusHandler(CorpusName.SEMCOR, tmp_dir_name)
             self.assertEqual(CorpusName.SEMCOR, corpus.corpus_name)
             self.assertEqual(tmp_dir_name, corpus.corpus_path)
-            self.assertEqual("semcor_sentences-df.pkl", corpus.sentences_name)
-            self.assertEqual("semcor_tagged_tokens-df.pkl",
+            self.assertEqual("SemCor-sentences.pkl", corpus.sentences_name)
+            self.assertEqual("SemCor-tagged_tokens.pkl",
                              corpus.tagged_tokens_name)
 
     def test_get_sentences(self):
-        expected = pd.DataFrame({'sentence': tp.SENTENCES})
-        corpus = CorpusHandler(CorpusName.TOY)
-        pd.testing.assert_frame_equal(expected, corpus.get_sentences())
+        with TemporaryDirectory() as tmp_dir:
+            toy_preprocessor = tp.ToyPreprocessor(corpus_cache_path=tmp_dir)
+            toy_preprocessor.cache_dataset()
+
+            expected = pd.DataFrame({'sentence': tp.SENTENCES})
+            corpus = CorpusHandler(CorpusName.TOY, tmp_dir)
+            pd.testing.assert_frame_equal(expected, corpus.get_sentences())
 
     def test_get_sentences_as_list(self):
-        corpus = CorpusHandler(CorpusName.TOY)
-        self.assertEqual(tp.SENTENCES, corpus.get_sentences_as_list())
+        with TemporaryDirectory() as tmp_dir:
+            toy_preprocessor = tp.ToyPreprocessor(corpus_cache_path=tmp_dir)
+            toy_preprocessor.cache_dataset()
+
+            corpus = CorpusHandler(CorpusName.TOY, tmp_dir)
+            self.assertEqual(tp.SENTENCES, corpus.get_sentences_as_list())
 
     def test_get_tagged_tokens(self):
-        expected = pd.DataFrame({'token': tp.TOKENS, 'sense': tp.SENSES})
-        corpus = CorpusHandler(CorpusName.TOY)
-        pd.testing.assert_frame_equal(expected, corpus.get_tagged_tokens())
+        with TemporaryDirectory() as tmp_dir:
+            toy_preprocessor = tp.ToyPreprocessor(corpus_cache_path=tmp_dir)
+            toy_preprocessor.cache_dataset()
+
+            expected = pd.DataFrame({'token': tp.TOKENS, 'sense': tp.SENSES})
+            corpus = CorpusHandler(CorpusName.TOY, tmp_dir)
+            pd.testing.assert_frame_equal(expected, corpus.get_tagged_tokens())
 
 
 if __name__ == '__main__':

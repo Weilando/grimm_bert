@@ -1,30 +1,37 @@
-import os
-
 import pandas as pd
 
-import data.file_handler as fh
+from data.corpus_handler import CorpusName
+from data.corpus_preprocessor import CorpusPreprocessor
+from grimm_bert import DEFAULT_CORPUS_CACHE_DIR
 
-SENTENCES_NAME = 'toy_sentences'
-TAGGED_TOKENS_NAME = 'toy_tagged_tokens'
-
-SENTENCES = ["He wears a watch.", "She glances at her watch.",
-             "He wants to watch the soccer match."]
+SENTENCES = [['He', 'wears', 'a', 'watch', '.'],
+             ['She', 'glances', 'at', 'the', 'watch', 'often', '.'],
+             ['He', 'wants', 'to', 'watch', 'the', 'soccer', 'match', '.'],
+             ['We', 'watch', 'movies', 'and', 'eat', 'popcorn', '.']]
 
 TOKENS = ['he', 'wears', 'a', 'watch', '.',
-          'she', 'glances', 'at', 'her', 'watch', '.',
-          'he', 'wants', 'to', 'watch', 'the', 'soccer', 'match', '.']
+          'she', 'glances', 'at', 'the', 'watch', 'often', '.',
+          'he', 'wants', 'to', 'watch', 'the', 'soccer', 'match', '.',
+          'we', 'watch', 'movies', 'and', 'eat', 'popcorn', '.']
 
-SENSES = [0, 1, 2, 3, 4,
-          5, 6, 7, 8, 3, 4,
-          0, 9, 10, 11, 12, 13, 14, 4]
+SENSES = ['he0', 'wears0', 'a0', 'watch0', '.0',
+          'she0', 'glances0', 'at0', 'the0', 'watch0', 'often0', '.0',
+          'he0', 'wants0', 'to0', 'watch1', 'the0', 'soccer0', 'match0', '.0',
+          'we0', 'watch1', 'movies0', 'and0', 'eat0', 'popcorn0', '.0']
 
 
-def cache_toy_dataset(absolute_path: os.path):
-    """ Saves raw sentences for training and all tokens with their corresponding
-    senses for evaluation at 'absolute_path'. """
-    sentences = pd.DataFrame({'sentence': SENTENCES})
-    tagged_tokens = pd.DataFrame({'token': TOKENS, 'sense': SENSES})
+class ToyPreprocessor(CorpusPreprocessor):
+    def __init__(self, corpus_name: CorpusName = CorpusName.TOY,
+                 corpus_cache_path: str = DEFAULT_CORPUS_CACHE_DIR):
+        super().__init__(corpus_name, corpus_cache_path)
 
-    fh.save_df(absolute_path, fh.gen_df_file_name(SENTENCES_NAME), sentences)
-    fh.save_df(absolute_path, fh.gen_df_file_name(TAGGED_TOKENS_NAME),
-               tagged_tokens)
+    def get_sentences(self) -> pd.DataFrame:
+        return pd.DataFrame({'sentence': SENTENCES})
+
+    def get_tagged_tokens(self) -> pd.DataFrame:
+        return pd.DataFrame({'token': TOKENS, 'sense': SENSES})
+
+
+if __name__ == '__main__':
+    toy_preprocessor = ToyPreprocessor()
+    toy_preprocessor.cache_dataset()

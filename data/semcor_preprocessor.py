@@ -1,39 +1,38 @@
-import os
 from typing import List, Union
 
 import pandas as pd
 from nltk.corpus import SemcorCorpusReader, semcor
 from nltk.tree.tree import Tree
 
-import data.file_handler as fh
+from data.corpus_handler import CorpusName
+from data.corpus_preprocessor import CorpusPreprocessor
+from grimm_bert import DEFAULT_CORPUS_CACHE_DIR
 
 STD_SENSE = '_SENSE'
-SENTENCES_NAME = 'semcor_sentences'
-TAGGED_TOKENS_NAME = 'semcor_tagged_tokens'
 
 
 def get_tokens_and_senses_from_list(tokens: List[str], sense: str = STD_SENSE) \
         -> pd.DataFrame:
-    """ Assigns generated sense names to a list of tokens. """
-    senses = [f"{token}{sense}" for token in tokens]
+    """ Assigns generated, lower cased sense names to a list of tokens. """
+    senses = [f"{token.lower()}{sense}" for token in tokens]
     return pd.DataFrame({'token': tokens, 'sense': senses})
 
 
 def get_tokens_and_senses_from_tree(tree: Tree) -> pd.DataFrame:
     """ Assigns the corresponding sense per token. Tokens are the leaves of
     'tree' and the common sense is its root label. The label can be either a str
-    or a nltk.corpus.wordnet.Lemma and is always represented as str. Prepends
-    the token itself to ensure unique senses across tokens. """
+    or a nltk.corpus.wordnet.Lemma and is always represented as str. Lower cases
+    and prepends the token itself to ensure unique senses across tokens. """
     tokens = tree.leaves()
-    senses = [f"{token}_{tree.label()}" for token in tokens]
+    senses = [f"{token.lower()}_{tree.label()}" for token in tokens]
     return pd.DataFrame({'token': tokens, 'sense': senses})
 
 
 def get_tokens_and_senses_from_sentence(sentence: List[Union[Tree, List[str]]],
                                         sense: str = STD_SENSE) -> pd.DataFrame:
     """ Extracts tokens and their respective senses from 'sentence'. The sense
-    can be either a str or a lemma from WordNet. Prepends the token itself to
-    ensure unique senses across tokens. """
+    can be either a str or a lemma from WordNet. Lower cases and prepends the
+    token itself to ensure unique senses across tokens. """
     tokens_and_senses = [(get_tokens_and_senses_from_tree(element)
                           if isinstance(element, Tree) else
                           get_tokens_and_senses_from_list(element, sense))
@@ -53,17 +52,23 @@ def get_tokens_and_senses_from_sentences(
 
 
 def get_sentences_with_sense_tags(corpus_reader: SemcorCorpusReader) -> List:
-    """ Returns a list of chunked sentences with semantic tags. """
+    """ Returns a list of chunked, tokenized sentences with semantic tags. """
     return corpus_reader.tagged_sents(tag='sem')
 
 
-def cache_semcor_dataset(absolute_path: os.path):
-    """ Saves raw sentences for training and all tokens with their corresponding
-    senses for evaluation at 'absolute_path'. """
-    sentences = pd.DataFrame({'sentence': semcor.sents()})
-    tagged_sentences = get_sentences_with_sense_tags(semcor)
-    tagged_tokens = get_tokens_and_senses_from_sentences(tagged_sentences)
+class SemcorPreprocessor(CorpusPreprocessor):
+    def __init__(self, corpus_name: CorpusName = CorpusName.SEMCOR,
+                 corpus_cache_path: str = DEFAULT_CORPUS_CACHE_DIR):
+        super().__init__(corpus_name, corpus_cache_path)
 
-    fh.save_df(absolute_path, fh.gen_df_file_name(SENTENCES_NAME), sentences)
-    fh.save_df(absolute_path, fh.gen_df_file_name(TAGGED_TOKENS_NAME),
-               tagged_tokens)
+    def get_sentences(self) -> pd.DataFrame:
+        return pd.DataFrame({'sentence': semcor.sents()})
+
+    def get_tagged_tokens(self) -> pd.DataFrame:
+        tagged_sentences = get_sentences_with_sense_tags(semcor)
+        return get_tokens_and_senses_from_sentences(tagged_sentences)
+
+
+if __name__ == '__main__':
+    semcor_preprocessor = SemcorPreprocessor()
+    semcor_preprocessor.cache_dataset()

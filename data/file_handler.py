@@ -20,11 +20,6 @@ def does_file_exist(absolute_path: os.path, file_name: str) -> bool:
     return os.path.exists(file_path) and os.path.isfile(file_path)
 
 
-def gen_df_file_name(df_name: str) -> str:
-    """ Generates the name for a file holding a DataFrame. """
-    return f"{df_name}-df.pkl"
-
-
 def gen_dictionary_file_name(corpus_name: str, distance: float) -> str:
     """ Generates the name for a file holding a dictionary DataFrame. """
     return f"{corpus_name}-dist_{distance}-dictionary.pkl"
@@ -35,9 +30,19 @@ def gen_raw_id_map_file_name(corpus_name: str) -> str:
     return f"{corpus_name}-raw_id_map.pkl"
 
 
+def gen_sentences_file_name(corpus_name: str) -> str:
+    """ Generates the name for a file of a DataFrame with sentences. """
+    return f"{corpus_name}-sentences.pkl"
+
+
 def gen_stats_file_name(corpus_name: str, distance: float) -> str:
     """ Generates the name for a file holding a dict with statistics. """
     return f"{corpus_name}-dist_{distance}-stats.json"
+
+
+def gen_tagged_tokens_file_name(corpus_name: str) -> str:
+    """ Generates the name for a file of a DataFrame with tokens and tags. """
+    return f"{corpus_name}-tagged_tokens.pkl"
 
 
 def gen_word_vec_file_name(corpus_name: str) -> str:

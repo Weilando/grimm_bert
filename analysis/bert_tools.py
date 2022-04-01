@@ -6,7 +6,6 @@ import pandas as pd
 import torch
 from model.character_bert import CharacterBertModel
 from model.character_cnn_utils import CharacterIndexer
-from transformers import BertTokenizer
 
 from analysis import aggregator as ag
 
@@ -14,12 +13,6 @@ from analysis import aggregator as ag
 def gen_model_cache_location(cache_directory: str, model_name: str) -> str:
     """ Generates the path for the model cache location. """
     return os.path.join(cache_directory, model_name)
-
-
-def get_bert_tokenizer_from_cache(model_cache: str) -> BertTokenizer:
-    """ Loads an uncased BERT base tokenizer from 'model_cache'. """
-    tokenizer_path = gen_model_cache_location(model_cache, 'bert-base-uncased')
-    return BertTokenizer.from_pretrained(tokenizer_path)
 
 
 def get_character_bert_from_cache(model_cache: str) -> CharacterBertModel:
@@ -51,22 +44,11 @@ def calc_word_vectors(encoded_sentence: torch.Tensor,
         return model(encoded_sentence)[0]
 
 
-def strip_each(sentences: List[Union[List[str], torch.Tensor]]) \
+def strip_each(tokenized_sentences: List[Union[List[str], torch.Tensor]]) \
         -> List[Union[List[str], torch.Tensor]]:
     """ Drop the first and last token from every sentence or the first and last
     word vector in a matrix. Does not check if they are special tokens. """
-    return [sentence[1:-1] for sentence in sentences]
-
-
-def should_tokenize(sentences: Union[List[str], List[List[str]]]) -> bool:
-    """ Indicates if 'sentences' should be tokenized based on the first one. """
-    return isinstance(sentences[0], str)
-
-
-def tokenize_sentences(sentences: List[str], tokenizer: BertTokenizer) \
-        -> List[List[str]]:
-    """ Tokenizes 'sentences'. """
-    return [tokenizer.basic_tokenizer.tokenize(s) for s in sentences]
+    return [sentence[1:-1] for sentence in tokenized_sentences]
 
 
 def add_special_tokens_to_each(tokenized_sentences: List[List[str]]) \
@@ -75,9 +57,9 @@ def add_special_tokens_to_each(tokenized_sentences: List[List[str]]) \
     return [add_special_tokens(s) for s in tokenized_sentences]
 
 
-def lower_sentences(sentences: List[List[str]]) -> List[List[str]]:
-    """ Lower cases all tokens in 'sentences'. """
-    return [lower_tokens(s) for s in sentences]
+def lower_sentences(tokenized_sentences: List[List[str]]) -> List[List[str]]:
+    """ Lower cases all tokens in 'tokenized_sentences'. """
+    return [lower_tokens(s) for s in tokenized_sentences]
 
 
 def embed_sentences(tokenized_sentences: List[List[str]],

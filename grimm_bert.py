@@ -15,9 +15,10 @@ from data.corpus_handler import CorpusName, CorpusHandler
 current_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_path)
 
-DEFAULT_LOG_LEVEL = 'INFO'
+DEFAULT_CORPUS_CACHE_DIR = './data/corpus_cache'
 DEFAULT_MODEL_CACHE_DIR = './model_cache'
 DEFAULT_MAX_CLUSTER_DISTANCE = 0.1
+DEFAULT_LOG_LEVEL = 'INFO'
 
 
 def build_argument_parser() -> ArgumentParser:
@@ -31,31 +32,29 @@ def build_argument_parser() -> ArgumentParser:
     p.add_argument('results_path', type=str, default=None,
                    help="relative path from project root to result files")
 
-    p.add_argument('-l', '--log', type=str, action='store',
-                   default=DEFAULT_LOG_LEVEL, help="logging level")
-    p.add_argument('-c', '--model_cache', type=str, action='store',
+    p.add_argument('-c', '--corpus_cache', type=str, action='store',
+                   default=DEFAULT_CORPUS_CACHE_DIR,
+                   help="relative path from project root to corpus files")
+    p.add_argument('-m', '--model_cache', type=str, action='store',
                    default=DEFAULT_MODEL_CACHE_DIR,
                    help="relative path from project root to model files")
     p.add_argument('-d', '--max_dist', type=float, action='store',
                    default=DEFAULT_MAX_CLUSTER_DISTANCE,
                    help="maximum distance for clustering")
+    p.add_argument('-l', '--log', type=str, action='store',
+                   default=DEFAULT_LOG_LEVEL, help="logging level")
 
     return p
 
 
-def main(corpus_name: CorpusName, max_dist: float, model_cache: str,
-         results_path: str):
+def main(corpus_name: CorpusName, corpus_cache: str, model_cache: str,
+         results_path: str, max_dist: float):
     stats = {'corpus_name': corpus_name, 'max_dist': max_dist}
-    corpus = CorpusHandler(corpus_name)
+    corpus = CorpusHandler(corpus_name, corpus_cache)
     sentences = corpus.get_sentences_as_list()
 
-    if bt.should_tokenize(sentences):
-        tokenizer = bt.get_bert_tokenizer_from_cache(model_cache)
-        sentences = bt.tokenize_sentences(sentences, tokenizer)
-        logging.info("Tokenized and lower cased sentences.")
-    else:
-        sentences = bt.lower_sentences(sentences)
-        logging.info("Lower cased sentences.")
+    sentences = bt.lower_sentences(sentences)
+    logging.info("Lower cased sentences.")
 
     sentences = bt.add_special_tokens_to_each(sentences)
     logging.info("Added special tokens.")
@@ -110,5 +109,6 @@ if __name__ == '__main__':
     logging.basicConfig(level=args.log.upper(),
                         format='%(levelname)s: %(message)s')
 
-    main(corpus_name=args.corpus_name, max_dist=args.max_dist,
-         model_cache=args.model_cache, results_path=args.results_path)
+    main(corpus_name=args.corpus_name, corpus_cache=args.corpus_cache,
+         model_cache=args.model_cache, results_path=args.results_path,
+         max_dist=args.max_dist)

@@ -3,7 +3,7 @@
 *__pycache__/
 *.ipynb_checkpoints/
 /model_cache
-/data/corpora
+/data/corpus_cache
 
 # IntelliJ
 .idea

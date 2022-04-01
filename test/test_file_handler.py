@@ -54,9 +54,6 @@ class TestFileHandler(TestCase):
         with TemporaryDirectory() as tmp_dir_name:
             self.assertFalse(fh.does_file_exist(tmp_dir_name, 'm.npz'))
 
-    def test_gen_df_file_name(self):
-        self.assertEqual('name-df.pkl', fh.gen_df_file_name('name'))
-
     def test_gen_dictionary_file_name(self):
         self.assertEqual('corpus_name-dist_0.12345-dictionary.pkl',
                          fh.gen_dictionary_file_name('corpus_name', 0.12345))
@@ -65,9 +62,17 @@ class TestFileHandler(TestCase):
         self.assertEqual('corpus_name-raw_id_map.pkl',
                          fh.gen_raw_id_map_file_name('corpus_name'))
 
+    def test_gen_sentences_file_name(self):
+        self.assertEqual('corpus_name-sentences.pkl',
+                         fh.gen_sentences_file_name('corpus_name'))
+
     def test_gen_stats_file_name(self):
         self.assertEqual('corpus_name-dist_0.12345-stats.json',
                          fh.gen_stats_file_name('corpus_name', 0.12345))
+
+    def test_gen_tagged_tokens_file_name(self):
+        self.assertEqual('corpus_name-tagged_tokens.pkl',
+                         fh.gen_tagged_tokens_file_name('corpus_name'))
 
     def test_gen_word_vec_file_name(self):
         self.assertEqual('corpus_name-word_vectors.npz',
