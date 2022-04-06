@@ -20,11 +20,12 @@ def get_tokens_and_senses_from_list(tokens: List[str], sense: str = STD_SENSE) \
 
 def get_tokens_and_senses_from_tree(tree: Tree) -> pd.DataFrame:
     """ Assigns the corresponding sense per token. Tokens are the leaves of
-    'tree' and the common sense is its root label. The label can be either a str
-    or a nltk.corpus.wordnet.Lemma and is always represented as str. Lower cases
-    and prepends the token itself to ensure unique senses across tokens. """
+    'tree' and the common sense is their pre-terminal label. The label is either
+    a str or a nltk.corpus.wordnet.Lemma. Lower cases and prepends the token
+    itself to generate unique sense strs across tokens. """
     tokens = tree.leaves()
-    senses = [f"{token.lower()}_{tree.label()}" for token in tokens]
+    pre_terminal_sense = tree.pos()[0][1]
+    senses = [f"{token.lower()}_{pre_terminal_sense}" for token in tokens]
     return pd.DataFrame({'token': tokens, 'sense': senses})
 
 

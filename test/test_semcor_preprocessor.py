@@ -51,11 +51,12 @@ class TestSemcorPreprocessor(TestCase):
         pd.testing.assert_frame_equal(df_exp, df_res)
 
     def test_get_tokens_and_senses_from_nested_tree(self):
-        """ Should extract the leafs as tokens. Should lowercase each token and
-        add the WordNet sense from the root to generate the senses. """
+        """ Should extract the leafs as tokens. Should cut the root until each
+        node is either the root or a leaf, lowercase each token and add the
+        WordNet sense from the root to generate the senses. """
         df_exp = pd.DataFrame({'token': ['Jacob', 'Grimm'],
-                               'sense': ["jacob_Lemma('group.n.01.group')",
-                                         "grimm_Lemma('group.n.01.group')"]})
+                               'sense': ["jacob_NE",
+                                         "grimm_NE"]})
         df_res = sp.get_tokens_and_senses_from_tree(self.token_tree_sub)
         pd.testing.assert_frame_equal(df_exp, df_res)
 
@@ -67,9 +68,7 @@ class TestSemcorPreprocessor(TestCase):
         df_exp = pd.DataFrame({
             'token': ['The', 'of', '3', 'said', 'such', 'Jacob', 'Grimm'],
             'sense': ['the_S', 'of_S', '3_S', "said_Lemma('state.v.01.say')",
-                      'such_such.s.00',
-                      "jacob_Lemma('group.n.01.group')",
-                      "grimm_Lemma('group.n.01.group')"]
+                      'such_such.s.00', "jacob_NE", "grimm_NE"]
         })
         df_res = sp.get_tokens_and_senses_from_sentence(sentence, '_S')
         pd.testing.assert_frame_equal(df_exp, df_res)
@@ -82,9 +81,7 @@ class TestSemcorPreprocessor(TestCase):
         df_exp = pd.DataFrame({
             'token': ['The', 'of', '3', 'said', 'such', 'Jacob', 'Grimm'],
             'sense': ['the_S', 'of_S', '3_S', "said_Lemma('state.v.01.say')",
-                      'such_such.s.00',
-                      "jacob_Lemma('group.n.01.group')",
-                      "grimm_Lemma('group.n.01.group')"]
+                      'such_such.s.00', "jacob_NE", "grimm_NE"]
         })
         df_res = sp.get_tokens_and_senses_from_sentences(sentences, '_S')
         pd.testing.assert_frame_equal(df_exp, df_res)
