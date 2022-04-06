@@ -9,6 +9,7 @@
 .idea
 
 # Results
-*/results
-results/*.npz
-results/*.pkl
+/data/results
+*.npz
+*.pkl
+*.json

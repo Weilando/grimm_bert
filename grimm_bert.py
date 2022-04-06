@@ -3,20 +3,18 @@ import os
 import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-from model.character_cnn_utils import CharacterIndexer
-from sklearn.metrics import adjusted_rand_score
-
-from analysis import aggregator as ag
-from analysis import bert_tools as bt
-from analysis import clustering as cl
-from data import file_handler as fh
-from data.corpus_handler import CorpusName, CorpusHandler
+import analysis.aggregator as ag
+import analysis.clustering as cl
+import analysis.pipeline_blocks as pb
+import data.file_handler as fh
+from data.corpus_handler import CorpusName
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_path)
 
 DEFAULT_CORPUS_CACHE_DIR = './data/corpus_cache'
 DEFAULT_MODEL_CACHE_DIR = './model_cache'
+DEFAULT_RESULTS_PATH = './data/results'
 DEFAULT_MAX_CLUSTER_DISTANCE = 0.1
 DEFAULT_LOG_LEVEL = 'INFO'
 
@@ -29,8 +27,6 @@ def build_argument_parser() -> ArgumentParser:
     p.add_argument('corpus_name', type=str, default=None,
                    choices=CorpusName.get_names(),
                    help="name of the base corpus for the dictionary")
-    p.add_argument('results_path', type=str, default=None,
-                   help="relative path from project root to result files")
 
     p.add_argument('-c', '--corpus_cache', type=str, action='store',
                    default=DEFAULT_CORPUS_CACHE_DIR,
@@ -38,6 +34,9 @@ def build_argument_parser() -> ArgumentParser:
     p.add_argument('-m', '--model_cache', type=str, action='store',
                    default=DEFAULT_MODEL_CACHE_DIR,
                    help="relative path from project root to model files")
+    p.add_argument('-r', '--results_path', type=str, action='store',
+                   default=DEFAULT_RESULTS_PATH,
+                   help="relative path from project root to result files")
     p.add_argument('-d', '--max_dist', type=float, action='store',
                    default=DEFAULT_MAX_CLUSTER_DISTANCE,
                    help="maximum distance for clustering")
@@ -50,56 +49,25 @@ def build_argument_parser() -> ArgumentParser:
 def main(corpus_name: CorpusName, corpus_cache: str, model_cache: str,
          results_path: str, max_dist: float):
     stats = {'corpus_name': corpus_name, 'max_dist': max_dist}
-    corpus = CorpusHandler(corpus_name, corpus_cache)
-    sentences = corpus.get_sentences_as_list()
-
-    sentences = bt.lower_sentences(sentences)
-    logging.info("Lower cased sentences.")
-
-    sentences = bt.add_special_tokens_to_each(sentences)
-    logging.info("Added special tokens.")
-    logging.info(f"First sentence: '{sentences[0]}'.")
 
     abs_results_path = fh.add_and_get_abs_path(results_path)
-    word_vec_file_name = fh.gen_word_vec_file_name(corpus_name)
-    raw_id_map_path = fh.gen_raw_id_map_file_name(corpus_name)
-    if fh.does_file_exist(abs_results_path, word_vec_file_name) \
-            and fh.does_file_exist(abs_results_path, raw_id_map_path):
-        word_vectors = fh.load_matrix(abs_results_path, word_vec_file_name)
-        id_map = fh.load_df(abs_results_path, raw_id_map_path)
-        logging.info("Loaded the word vectors and raw id_map from files.")
-    else:
-        indexer = CharacterIndexer()
-        model = bt.get_character_bert_from_cache(model_cache)
-        word_vectors, id_map = bt.embed_sentences(sentences, indexer, model)
-
-        fh.save_matrix(abs_results_path, word_vec_file_name, word_vectors)
-        fh.save_df(abs_results_path, raw_id_map_path, id_map)
-        logging.info("Calculated and saved the word vectors and raw id_map.")
+    word_vectors, id_map = pb.get_word_vectors(
+        corpus_name, corpus_cache, model_cache, abs_results_path)
 
     stats.update(ag.count_total_and_unique(id_map, 'token'))
-    logging.info(f"Shape of word vectors: {word_vectors.shape}.")
-    logging.info(f"Unique token count: {stats['unique_token_count']}.")
-
     id_map = ag.collect_references_and_word_vectors(id_map, 'token')
 
     dictionary = cl.cluster_vectors_per_token(word_vectors, id_map, max_dist)
+    logging.info(f"Generated dictionary.")
     dictionary_file_name = fh.gen_dictionary_file_name(corpus_name, max_dist)
     fh.save_df(abs_results_path, dictionary_file_name, dictionary)
-    logging.info(f"Saved dictionary.")
 
-    flat_dict_senses = ag.extract_flat_senses(dictionary)
-    stats.update(ag.count_total_and_unique(flat_dict_senses, 'sense'))
-    logging.info(f"Unique sense count: {stats['unique_sense_count']}.")
-
-    true_senses = ag.extract_int_senses(corpus.get_tagged_tokens())
-    dict_senses = ag.extract_int_senses(flat_dict_senses)
-    stats['ari'] = adjusted_rand_score(true_senses, dict_senses)
-    logging.info(f"ARI: {stats['ari']}")
+    dict_senses = ag.extract_flat_senses(dictionary)
+    stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
+    stats.update(pb.evaluate_with_ari(corpus_name, corpus_cache, dict_senses))
 
     stats_file_name = fh.gen_stats_file_name(corpus_name, max_dist)
     fh.save_stats(abs_results_path, stats_file_name, stats)
-    logging.info("Saved stats.")
 
 
 if __name__ == '__main__':
