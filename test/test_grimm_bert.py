@@ -1,4 +1,4 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentError
 from unittest import TestCase, main
 
 import grimm_bert as gb
@@ -45,8 +45,23 @@ class TestGrimmBert(TestCase):
         self.assertEqual(parsed_args.corpus_cache, gb.DEFAULT_CORPUS_CACHE_DIR)
         self.assertEqual(parsed_args.model_cache, gb.DEFAULT_MODEL_CACHE_DIR)
         self.assertEqual(parsed_args.results_path, gb.DEFAULT_RESULTS_PATH)
-        self.assertEqual(parsed_args.max_dist, gb.DEFAULT_MAX_CLUSTER_DISTANCE)
+        self.assertIsNone(parsed_args.max_dist)
         self.assertEqual(parsed_args.log, gb.DEFAULT_LOG_LEVEL)
+
+    def test_parse_no_max_dist(self):
+        """ Should raise an ArgumentError on empty max_dist argument. """
+        with self.assertRaises(ArgumentError) and self.assertRaises(SystemExit):
+            self.parser.parse_args(['Toy', 'complete', '--max_dist'])
+
+    def test_is_max_dist_defined_true(self):
+        self.assertTrue(gb.is_max_dist_defined(0.2))
+
+    def test_is_max_dist_defined_too_small(self):
+        self.assertFalse(gb.is_max_dist_defined(0.0))
+        self.assertFalse(gb.is_max_dist_defined(-0.1))
+
+    def test_is_max_dist_defined_not_defined(self):
+        self.assertFalse(gb.is_max_dist_defined(None))
 
 
 if __name__ == '__main__':

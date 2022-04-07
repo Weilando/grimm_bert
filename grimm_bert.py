@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from typing import Union
 
 import analysis.aggregator as ag
 import analysis.clustering as cl
@@ -16,7 +17,6 @@ os.chdir(current_path)
 DEFAULT_CORPUS_CACHE_DIR = './data/corpus_cache'
 DEFAULT_MODEL_CACHE_DIR = './model_cache'
 DEFAULT_RESULTS_PATH = './data/results'
-DEFAULT_MAX_CLUSTER_DISTANCE = 0.1
 DEFAULT_LOG_LEVEL = 'INFO'
 
 
@@ -41,13 +41,17 @@ def build_argument_parser() -> ArgumentParser:
     p.add_argument('-r', '--results_path', type=str, action='store',
                    default=DEFAULT_RESULTS_PATH,
                    help="relative path from project root to result files")
-    p.add_argument('-d', '--max_dist', type=float, action='store',
-                   default=DEFAULT_MAX_CLUSTER_DISTANCE,
+    p.add_argument('-d', '--max_dist', type=float, action='store', default=None,
                    help="maximum distance for clustering")
     p.add_argument('-l', '--log', type=str, action='store',
                    default=DEFAULT_LOG_LEVEL, help="logging level")
 
     return p
+
+
+def is_max_dist_defined(max_dist: Union[float, None]) -> bool:
+    """ Indicates if 'max_dist' is a float greater than zero. """
+    return max_dist is not None and max_dist > 0.0
 
 
 def main(corpus_name: CorpusName, corpus_cache: str, model_cache: str,
@@ -84,6 +88,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=args.log.upper(),
                         format='%(levelname)s: %(message)s')
 
+    assert is_max_dist_defined(args.max_dist)
     main(corpus_name=args.corpus_name, corpus_cache=args.corpus_cache,
          model_cache=args.model_cache, results_path=args.results_path,
          linkage_name=args.linkage_name, max_dist=args.max_dist)
