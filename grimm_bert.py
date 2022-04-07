@@ -7,6 +7,7 @@ import analysis.aggregator as ag
 import analysis.clustering as cl
 import analysis.pipeline_blocks as pb
 import data.file_handler as fh
+from analysis.linkage_name import LinkageName
 from data.corpus_handler import CorpusName
 
 current_path = os.path.dirname(os.path.abspath(__file__))
@@ -27,6 +28,9 @@ def build_argument_parser() -> ArgumentParser:
     p.add_argument('corpus_name', type=str, default=None,
                    choices=CorpusName.get_names(),
                    help="name of the base corpus for the dictionary")
+    p.add_argument('linkage_name', type=str, default=None,
+                   choices=LinkageName.get_names(),
+                   help="name of the linkage criterion for clustering")
 
     p.add_argument('-c', '--corpus_cache', type=str, action='store',
                    default=DEFAULT_CORPUS_CACHE_DIR,
@@ -47,8 +51,9 @@ def build_argument_parser() -> ArgumentParser:
 
 
 def main(corpus_name: CorpusName, corpus_cache: str, model_cache: str,
-         results_path: str, max_dist: float):
-    stats = {'corpus_name': corpus_name, 'max_dist': max_dist}
+         results_path: str, linkage_name: LinkageName, max_dist: float):
+    stats = {'corpus_name': corpus_name, 'linkage_name': linkage_name,
+             'max_dist': max_dist}
 
     abs_results_path = fh.add_and_get_abs_path(results_path)
     word_vectors, id_map = pb.get_word_vectors(
@@ -57,17 +62,19 @@ def main(corpus_name: CorpusName, corpus_cache: str, model_cache: str,
     stats.update(ag.count_total_and_unique(id_map, 'token'))
     id_map = ag.collect_references_and_word_vectors(id_map, 'token')
 
-    dictionary = cl.cluster_vectors_per_token(word_vectors, id_map, max_dist)
+    dictionary = cl.cluster_vectors_per_token(word_vectors, id_map,
+                                              linkage_name, max_dist)
     logging.info(f"Generated dictionary.")
-    dictionary_file_name = fh.gen_dictionary_file_name(corpus_name, max_dist)
-    fh.save_df(abs_results_path, dictionary_file_name, dictionary)
+    fh.save_df(abs_results_path,
+               fh.gen_dictionary_file_name(corpus_name, linkage_name, max_dist),
+               dictionary)
 
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
     stats.update(pb.evaluate_with_ari(corpus_name, corpus_cache, dict_senses))
-
-    stats_file_name = fh.gen_stats_file_name(corpus_name, max_dist)
-    fh.save_stats(abs_results_path, stats_file_name, stats)
+    fh.save_stats(abs_results_path,
+                  fh.gen_stats_file_name(corpus_name, linkage_name, max_dist),
+                  stats)
 
 
 if __name__ == '__main__':
@@ -79,4 +86,4 @@ if __name__ == '__main__':
 
     main(corpus_name=args.corpus_name, corpus_cache=args.corpus_cache,
          model_cache=args.model_cache, results_path=args.results_path,
-         max_dist=args.max_dist)
+         linkage_name=args.linkage_name, max_dist=args.max_dist)

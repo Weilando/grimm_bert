@@ -8,7 +8,7 @@ from data.corpus_handler import CorpusName, CorpusHandler
 
 
 class TestCorpusName(TestCase):
-    def test_get_sentences(self):
+    def test_get_names(self):
         self.assertEqual(['Toy', 'SemCor'], CorpusName.get_names())
 
 

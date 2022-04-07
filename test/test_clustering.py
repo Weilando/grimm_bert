@@ -4,6 +4,13 @@ import numpy as np
 import pandas as pd
 
 from analysis import clustering as cl
+from analysis.linkage_name import LinkageName
+
+
+class TestLinkageName(TestCase):
+    def test_get_names(self):
+        self.assertEqual(['average', 'complete', 'single'],
+                         LinkageName.get_names())
 
 
 class TestClustering(TestCase):
@@ -11,7 +18,8 @@ class TestClustering(TestCase):
         """ Should assign one word vector to one cluster. """
         word_vectors = np.array([[.9, .0]])
         cluster_exp = np.array(['t_0'])
-        cluster = cl.get_hierarchical_cluster(word_vectors, 't', .5)
+        cluster = cl.get_hierarchical_cluster(word_vectors, 't',
+                                              LinkageName.SINGLE, .5)
         np.testing.assert_array_equal(cluster_exp, cluster)
 
     def test_get_hierarchical_cluster(self):
@@ -19,7 +27,8 @@ class TestClustering(TestCase):
         cosine distance to the other vectors is high. """
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
         cluster_exp = np.array(['t_0', 't_0', 't_1'])
-        cluster = cl.get_hierarchical_cluster(word_vectors, 't', .5)
+        cluster = cl.get_hierarchical_cluster(word_vectors, 't',
+                                              LinkageName.SINGLE, .5)
         np.testing.assert_array_equal(cluster_exp, cluster)
 
     def test_cluster_vectors_per_token(self):
@@ -35,7 +44,7 @@ class TestClustering(TestCase):
                                        })
 
         dictionary_res = cl.cluster_vectors_per_token(word_vectors, id_map_red,
-                                                      max_distance=0.5)
+                                                      LinkageName.SINGLE, 0.5)
         pd.testing.assert_frame_equal(dictionary_exp, dictionary_res)
 
 

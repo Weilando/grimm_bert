@@ -13,9 +13,11 @@ class TestGrimmBert(TestCase):
         self.assertIsInstance(self.parser, ArgumentParser)
 
     def test_parse_short_options(self):
-        args = ['Toy', '-r', 'R', '-l', 'L', '-m', 'M', '-c', 'C', '-d', '.5']
+        args = ['Toy', 'average', '-r', 'R', '-l', 'L', '-m', 'M', '-c', 'C',
+                '-d', '.5']
         parsed_args = self.parser.parse_args(args)
         self.assertEqual(parsed_args.corpus_name, 'Toy')
+        self.assertEqual(parsed_args.linkage_name, 'average')
         self.assertEqual(parsed_args.corpus_cache, 'C')
         self.assertEqual(parsed_args.model_cache, 'M')
         self.assertEqual(parsed_args.results_path, 'R')
@@ -23,10 +25,12 @@ class TestGrimmBert(TestCase):
         self.assertEqual(parsed_args.log, 'L')
 
     def test_parse_long_options(self):
-        args = ['Toy', '--results_path', 'rp', '--log', 'INFO', '--model_cache',
-                'md', '--corpus_cache', 'cd', '--max_dist', '0.5']
+        args = ['Toy', 'complete', '--results_path', 'rp', '--log', 'INFO',
+                '--model_cache', 'md', '--corpus_cache', 'cd',
+                '--max_dist', '0.5']
         parsed_args = self.parser.parse_args(args)
         self.assertEqual(parsed_args.corpus_name, 'Toy')
+        self.assertEqual(parsed_args.linkage_name, 'complete')
         self.assertEqual(parsed_args.corpus_cache, 'cd')
         self.assertEqual(parsed_args.model_cache, 'md')
         self.assertEqual(parsed_args.results_path, 'rp')
@@ -34,9 +38,10 @@ class TestGrimmBert(TestCase):
         self.assertEqual(parsed_args.log, 'INFO')
 
     def test_parse_defaults(self):
-        args = ['Toy']
+        args = ['Toy', 'single']
         parsed_args = self.parser.parse_args(args)
         self.assertEqual(parsed_args.corpus_name, 'Toy')
+        self.assertEqual(parsed_args.linkage_name, 'single')
         self.assertEqual(parsed_args.corpus_cache, gb.DEFAULT_CORPUS_CACHE_DIR)
         self.assertEqual(parsed_args.model_cache, gb.DEFAULT_MODEL_CACHE_DIR)
         self.assertEqual(parsed_args.results_path, gb.DEFAULT_RESULTS_PATH)
