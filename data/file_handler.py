@@ -20,34 +20,44 @@ def does_file_exist(absolute_path: os.path, file_name: str) -> bool:
     return os.path.exists(file_path) and os.path.isfile(file_path)
 
 
-def gen_dictionary_file_name(corpus_name: str, linkage: str, distance: float) \
-        -> str:
-    """ Generates the name for a file holding a dictionary DataFrame. """
+def gen_dictionary_file_name(corpus_name: str, linkage: str,
+                             distance: float) -> str:
+    """ Generates a file name for a dictionary DataFrame. """
     return f"{corpus_name}-linkage_{linkage}-dist_{distance}-dictionary.pkl"
 
 
+def gen_dictionary_file_name_no_dist(corpus_name: str, linkage: str) -> str:
+    """ Generates a file name for a dictionary DataFrame. """
+    return f"{corpus_name}-linkage_{linkage}-no_dist-dictionary.pkl"
+
+
 def gen_raw_id_map_file_name(corpus_name: str) -> str:
-    """ Generates the name for a file holding a raw id_map DataFrame. """
+    """ Generates a file name for a raw id_map DataFrame. """
     return f"{corpus_name}-raw_id_map.pkl"
 
 
 def gen_sentences_file_name(corpus_name: str) -> str:
-    """ Generates the name for a file of a DataFrame with sentences. """
+    """ Generates a file name for a DataFrame with sentences. """
     return f"{corpus_name}-sentences.pkl"
 
 
 def gen_stats_file_name(corpus_name: str, linkage: str, distance: float) -> str:
-    """ Generates the name for a file holding a dict with statistics. """
+    """ Generates a file name for a dict with statistics. """
     return f"{corpus_name}-linkage_{linkage}-dist_{distance}-stats.json"
 
 
+def gen_stats_file_name_no_dist(corpus_name: str, linkage: str) -> str:
+    """ Generates a file name for a dict with statistics. """
+    return f"{corpus_name}-linkage_{linkage}-no_dist-stats.json"
+
+
 def gen_tagged_tokens_file_name(corpus_name: str) -> str:
-    """ Generates the name for a file of a DataFrame with tokens and tags. """
+    """ Generates a file name for a DataFrame with tokens and tags. """
     return f"{corpus_name}-tagged_tokens.pkl"
 
 
 def gen_word_vec_file_name(corpus_name: str) -> str:
-    """ Generates the name for a file holding a word vector matrix. """
+    """ Generates a file name for a word vector matrix. """
     return f"{corpus_name}-word_vectors.npz"
 
 

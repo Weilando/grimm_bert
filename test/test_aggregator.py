@@ -75,6 +75,26 @@ class TestAggregator(TestCase):
         expected = {'total_a_count': 5, 'unique_a_count': 3}
         self.assertEqual(expected, ag.count_total_and_unique(df, 'a'))
 
+    def test_count_unique_senses_per_token(self):
+        df = pd.DataFrame({'token': ['a', 'b', 'b', 'a', 'b', 'b'],
+                           'sense': ['a0', 'b0', 'b1', 'a0', 'b2', 'b1']})
+        expected = pd.DataFrame({'token': ['a', 'b'], 'n_senses': [1, 3]})
+        pd.testing.assert_frame_equal(expected,
+                                      ag.count_unique_senses_per_token(df))
+
+    def test_add_sense_counts_to_id_map(self):
+        id_map = pd.DataFrame({'token': [7, 42],
+                               'reference_id': [[0], [0, 1, 1]],
+                               'word_vector_id': [[1], [0, 2, 3]]})
+        sense_counts = pd.DataFrame({'token': [7, 42],
+                                     'n_senses': [1, 2]})
+        expected_id_map = pd.DataFrame({'token': [7, 42],
+                                        'reference_id': [[0], [0, 1, 1]],
+                                        'word_vector_id': [[1], [0, 2, 3]],
+                                        'n_senses': [1, 2]})
+        result_id_map = ag.add_sense_counts_to_id_map(id_map, sense_counts)
+        pd.testing.assert_frame_equal(expected_id_map, result_id_map)
+
 
 if __name__ == '__main__':
     main()

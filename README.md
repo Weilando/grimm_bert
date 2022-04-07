@@ -26,6 +26,9 @@ We take a list of sentences as input, where each sentence is list of str tokens.
 5. Perform word sense disambiguation per token with hierarchical clustering based on cosine similarities.
 6. Evaluate the dictionary with the adjusted rand index (ARI).
 
+If no maximum distance is given, the pipeline uses the number of senses from the ground truth to cluster word vectors.
+Otherwise, it uses the maximum distance to distinguish different senses per token.
+
 ## Caches
 
 The software uses caches to enable executions in offline HPC environments and to speed up repeated calculations.

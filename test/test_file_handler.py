@@ -58,6 +58,10 @@ class TestFileHandler(TestCase):
         self.assertEqual('cor-linkage_single-dist_0.12345-dictionary.pkl',
                          fh.gen_dictionary_file_name('cor', 'single', 0.12345))
 
+    def test_gen_dictionary_file_name_no_dist(self):
+        self.assertEqual('cor-linkage_single-no_dist-dictionary.pkl',
+                         fh.gen_dictionary_file_name_no_dist('cor', 'single'))
+
     def test_gen_raw_id_map_file_name(self):
         self.assertEqual('corpus_name-raw_id_map.pkl',
                          fh.gen_raw_id_map_file_name('corpus_name'))
@@ -69,6 +73,10 @@ class TestFileHandler(TestCase):
     def test_gen_stats_file_name(self):
         self.assertEqual('cor-linkage_average-dist_0.12345-stats.json',
                          fh.gen_stats_file_name('cor', 'average', 0.12345))
+
+    def test_gen_stats_file_name_no_dist(self):
+        self.assertEqual('cor-linkage_average-no_dist-stats.json',
+                         fh.gen_stats_file_name_no_dist('cor', 'average'))
 
     def test_gen_tagged_tokens_file_name(self):
         self.assertEqual('corpus_name-tagged_tokens.pkl',

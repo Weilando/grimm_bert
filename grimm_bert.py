@@ -22,7 +22,9 @@ DEFAULT_LOG_LEVEL = 'INFO'
 
 def build_argument_parser() -> ArgumentParser:
     """ Builds an ArgumentParser with help messages. """
-    p = ArgumentParser(description="Automatic dictionary generation.",
+    p = ArgumentParser(description="Automatic dictionary generation."
+                                   "Uses the true number of senses per token if"
+                                   "no maximum distance is given.",
                        formatter_class=ArgumentDefaultsHelpFormatter)
 
     p.add_argument('corpus_name', type=str, default=None,
@@ -54,8 +56,12 @@ def is_max_dist_defined(max_dist: Union[float, None]) -> bool:
     return max_dist is not None and max_dist > 0.0
 
 
-def main(corpus_name: CorpusName, corpus_cache: str, model_cache: str,
-         results_path: str, linkage_name: LinkageName, max_dist: float):
+def create_dictionary(corpus_name: CorpusName, corpus_cache: str,
+                      model_cache: str, results_path: str,
+                      linkage_name: LinkageName, max_dist: float) -> None:
+    """ Creates a dictionary from the given corpus with word vectors from
+    CharacterBERT and hierarchical clustering with the specified linkage
+    criterion and maximum distance. """
     stats = {'corpus_name': corpus_name, 'linkage_name': linkage_name,
              'max_dist': max_dist}
 
@@ -81,6 +87,37 @@ def main(corpus_name: CorpusName, corpus_cache: str, model_cache: str,
                   stats)
 
 
+def create_dictionary_with_known_sense_counts(
+        corpus_name: CorpusName, corpus_cache: str, model_cache: str,
+        results_path: str, linkage_name: LinkageName) -> None:
+    """ Creates a dictionary from the given corpus with word vectors from
+    CharacterBERT and hierarchical clustering with the specified linkage
+    criterion and the true number of unique senses per token. """
+    stats = {'corpus_name': corpus_name, 'linkage_name': linkage_name}
+
+    abs_results_path = fh.add_and_get_abs_path(results_path)
+    word_vectors, id_map = pb.get_word_vectors(
+        corpus_name, corpus_cache, model_cache, abs_results_path)
+
+    stats.update(ag.count_total_and_unique(id_map, 'token'))
+    id_map = ag.collect_references_and_word_vectors(id_map, 'token')
+    id_map = pb.add_sense_counts_to_id_map(corpus_name, corpus_cache, id_map)
+
+    dictionary = cl.cluster_vectors_per_token_with_known_sense_count(
+        word_vectors, id_map, linkage_name)
+    logging.info(f"Generated dictionary.")
+    fh.save_df(abs_results_path,
+               fh.gen_dictionary_file_name_no_dist(corpus_name, linkage_name),
+               dictionary)
+
+    dict_senses = ag.extract_flat_senses(dictionary)
+    stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
+    stats.update(pb.evaluate_with_ari(corpus_name, corpus_cache, dict_senses))
+    fh.save_stats(abs_results_path,
+                  fh.gen_stats_file_name_no_dist(corpus_name, linkage_name),
+                  stats)
+
+
 if __name__ == '__main__':
     argument_parser = build_argument_parser()
     args = argument_parser.parse_args(sys.argv[1:])
@@ -88,7 +125,13 @@ if __name__ == '__main__':
     logging.basicConfig(level=args.log.upper(),
                         format='%(levelname)s: %(message)s')
 
-    assert is_max_dist_defined(args.max_dist)
-    main(corpus_name=args.corpus_name, corpus_cache=args.corpus_cache,
-         model_cache=args.model_cache, results_path=args.results_path,
-         linkage_name=args.linkage_name, max_dist=args.max_dist)
+    if is_max_dist_defined(args.max_dist):
+        create_dictionary(
+            corpus_name=args.corpus_name, corpus_cache=args.corpus_cache,
+            model_cache=args.model_cache, results_path=args.results_path,
+            linkage_name=args.linkage_name, max_dist=args.max_dist)
+    else:
+        create_dictionary_with_known_sense_counts(
+            corpus_name=args.corpus_name, corpus_cache=args.corpus_cache,
+            model_cache=args.model_cache, results_path=args.results_path,
+            linkage_name=args.linkage_name)

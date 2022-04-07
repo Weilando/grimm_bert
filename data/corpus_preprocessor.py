@@ -20,7 +20,7 @@ class CorpusPreprocessor(object):
 
     def cache_dataset(self) -> None:
         """ Saves raw tokenized sentences for training and all tokens with their
-        corresponding senses for evaluation at 'absolute_path'. """
+        corresponding senses for evaluation at 'corpus_cache_path'. """
         sentences = self.get_sentences()
         tagged_tokens = self.get_tagged_tokens()
 

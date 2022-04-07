@@ -61,3 +61,16 @@ def count_total_and_unique(df: pd.DataFrame, column: str) -> Dict:
     """ Calculates the total and distinct number of elements in 'column'. """
     return {f"total_{column}_count": int(df[column].count()),
             f"unique_{column}_count": int(df[column].nunique())}
+
+
+def count_unique_senses_per_token(df: pd.DataFrame) -> pd.DataFrame:
+    """ Counts unique senses per token. """
+    return df.groupby(by='token') \
+        .agg(n_senses=('sense', 'nunique')) \
+        .reset_index()
+
+
+def add_sense_counts_to_id_map(id_map: pd.DataFrame,
+                               sense_counts: pd.DataFrame) -> pd.DataFrame:
+    """ Adds the number of senses from 'sense_counts' to 'id_map'. """
+    return pd.merge(id_map, sense_counts, on='token')

@@ -27,6 +27,18 @@ def load_and_preprocess_sentences(corpus_name: CorpusName, corpus_cache: str) \
     return sentences
 
 
+def add_sense_counts_to_id_map(corpus_name: CorpusName, corpus_cache: str,
+                               id_map: pd.DataFrame) -> pd.DataFrame:
+    """ Loads tagged tokens from the specified corpus and adds the number of
+    unique senses per token to 'id_map'. """
+    corpus = CorpusHandler(corpus_name, corpus_cache)
+    tagged_tokens = corpus.get_tagged_tokens()
+    sense_counts = ag.count_unique_senses_per_token(tagged_tokens)
+
+    logging.info("Loaded ground truth number of senses per token.")
+    return ag.add_sense_counts_to_id_map(id_map, sense_counts)
+
+
 def does_word_vector_cache_exist(abs_results_path: os.path,
                                  word_vec_file_name: str,
                                  raw_id_map_path: str) -> bool:
