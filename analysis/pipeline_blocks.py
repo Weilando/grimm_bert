@@ -5,7 +5,7 @@ from typing import List, Dict, Tuple
 import numpy as np
 import pandas as pd
 from model.character_cnn_utils import CharacterIndexer
-from sklearn.metrics import adjusted_rand_score
+from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
 
 import analysis.aggregator as ag
 import analysis.bert_tools as bt
@@ -81,14 +81,16 @@ def get_word_vectors(corpus_name: CorpusName, corpus_cache: str,
     return word_vectors, id_map
 
 
-def evaluate_with_ari(corpus_name: CorpusName, corpus_cache: str,
-                      flat_dict_senses: pd.DataFrame) -> Dict:
-    """ Calculates the Adjusted Rand Index (ARI) for 'flat_dict_senses' and the
-    ground truth for the given corpus and writes into a statistics dict. """
+def evaluate_clustering(corpus_name: CorpusName, corpus_cache: str,
+                        flat_dict_senses: pd.DataFrame) -> Dict:
+    """ Calculates the Adjusted Rand Index (ARI) and Adjusted Mutual Information
+    (AMI) for 'flat_dict_senses' and the ground truth for the given corpus and
+    writes them into a statistics dict. """
     corpus = CorpusHandler(corpus_name, corpus_cache)
     true_senses = ag.extract_int_senses(corpus.get_tagged_tokens())
     dict_senses = ag.extract_int_senses(flat_dict_senses)
     ari = adjusted_rand_score(true_senses, dict_senses)
+    ami = adjusted_mutual_info_score(true_senses, dict_senses)
 
-    logging.info(f"ARI: {ari}")
-    return {'ari': ari}
+    logging.info(f"ARI: {ari}, AMI: {ami}")
+    return {'ari': ari, 'ami': ami}

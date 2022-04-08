@@ -30,7 +30,7 @@ class TestPipelineBlocks(TestCase):
             self.assertIn("Lower cased sentences and added special tokens.",
                           captured_logs.output[0])
 
-    def test_evaluate_with_ari(self):
+    def test_evaluate_clustering(self):
         with TemporaryDirectory() as tmp_dir:
             toy_preprocessor = tp.ToyPreprocessor(corpus_cache_path=tmp_dir)
             toy_preprocessor.cache_dataset()
@@ -39,10 +39,10 @@ class TestPipelineBlocks(TestCase):
                 {'word_vector_id': range(len(tp.TOKENS)),
                  'sense': tp.SENSES})
 
-            with self.assertLogs(level="INFO") as captured_logs:
-                stats = pb.evaluate_with_ari(CorpusName.TOY, tmp_dir,
-                                             flat_dict_senses)
+            with self.assertLogs(level="INFO") as logs:
+                stats = pb.evaluate_clustering(CorpusName.TOY, tmp_dir,
+                                               flat_dict_senses)
 
-            self.assertEqual({'ari': 1.0}, stats)
-            self.assertEqual(len(captured_logs.records), 1)
-            self.assertEqual(captured_logs.records[0].getMessage(), "ARI: 1.0")
+            self.assertEqual({'ari': 1.0, 'ami': 1.0}, stats)
+            self.assertEqual(len(logs.records), 1)
+            self.assertEqual(logs.records[0].getMessage(), "ARI: 1.0, AMI: 1.0")

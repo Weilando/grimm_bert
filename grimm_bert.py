@@ -81,7 +81,7 @@ def create_dictionary(corpus_name: CorpusName, corpus_cache: str,
 
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
-    stats.update(pb.evaluate_with_ari(corpus_name, corpus_cache, dict_senses))
+    stats.update(pb.evaluate_clustering(corpus_name, corpus_cache, dict_senses))
     fh.save_stats(abs_results_path,
                   fh.gen_stats_file_name(corpus_name, linkage_name, max_dist),
                   stats)
@@ -112,7 +112,7 @@ def create_dictionary_with_known_sense_counts(
 
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
-    stats.update(pb.evaluate_with_ari(corpus_name, corpus_cache, dict_senses))
+    stats.update(pb.evaluate_clustering(corpus_name, corpus_cache, dict_senses))
     fh.save_stats(abs_results_path,
                   fh.gen_stats_file_name_no_dist(corpus_name, linkage_name),
                   stats)
