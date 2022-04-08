@@ -1,48 +1,38 @@
-from tempfile import TemporaryDirectory
 from unittest import TestCase
+from unittest.mock import patch
 
 import pandas as pd
 
 from analysis import pipeline_blocks as pb
-from data import toy_preprocessor as tp
-from data.corpus_name import CorpusName
 
 
 class TestPipelineBlocks(TestCase):
-    def test_load_and_preprocess_sentences(self):
-        with TemporaryDirectory() as tmp_dir:
-            toy_preprocessor = tp.ToyPreprocessor(corpus_cache_path=tmp_dir)
-            toy_preprocessor.cache_dataset()
+    @patch('data.corpus_handler.CorpusHandler')
+    def test_load_and_preprocess_sentences(self, corpus):
+        corpus.get_sentences_as_list.return_value = [['hello', 'world', '!'],
+                                                     ['hi', '.']]
 
-            with self.assertLogs(level="INFO") as captured_logs:
-                sentences = pb.load_and_preprocess_sentences(CorpusName.TOY,
-                                                             tmp_dir)
+        with self.assertLogs(level="INFO") as captured_logs:
+            sentences = pb.load_and_preprocess_sentences(corpus)
 
-            expected = [['[CLS]', 'he', 'wears', 'a', 'watch', '.', '[SEP]'],
-                        ['[CLS]', 'she', 'glances', 'at', 'the', 'watch',
-                         'often', '.', '[SEP]'],
-                        ['[CLS]', 'he', 'wants', 'to', 'watch', 'the', 'soccer',
-                         'match', '.', '[SEP]'],
-                        ['[CLS]', 'we', 'watch', 'movies', 'and', 'eat',
-                         'popcorn', '.', '[SEP]']]
-            self.assertEqual(expected, sentences)
-            self.assertEqual(len(captured_logs.records), 1)
-            self.assertIn("Lower cased sentences and added special tokens.",
-                          captured_logs.output[0])
+            expected = [['[CLS]', 'hello', 'world', '!', '[SEP]'],
+                        ['[CLS]', 'hi', '.', '[SEP]']]
+        self.assertEqual(expected, sentences)
+        self.assertEqual(len(captured_logs.records), 1)
+        self.assertIn("Lower cased sentences and added special tokens.",
+                      captured_logs.output[0])
 
-    def test_evaluate_clustering(self):
-        with TemporaryDirectory() as tmp_dir:
-            toy_preprocessor = tp.ToyPreprocessor(corpus_cache_path=tmp_dir)
-            toy_preprocessor.cache_dataset()
+    @patch('data.corpus_handler.CorpusHandler')
+    def test_evaluate_clustering(self, corpus):
+        """ Should calculate the ARI and AMI for a perfect clustering. """
+        corpus.get_tagged_tokens.return_value = pd.DataFrame({
+            'token': ['a', 'b', 'a'], 'sense': ['a0', 'b0', 'a1']})
+        flat_dict_senses = pd.DataFrame({
+            'word_vector_id': [0, 1, 2], 'sense': ['a0', 'b0', 'a1']})
 
-            flat_dict_senses = pd.DataFrame(
-                {'word_vector_id': range(len(tp.TOKENS)),
-                 'sense': tp.SENSES})
+        with self.assertLogs(level="INFO") as logs:
+            stats = pb.evaluate_clustering(corpus, flat_dict_senses)
 
-            with self.assertLogs(level="INFO") as logs:
-                stats = pb.evaluate_clustering(CorpusName.TOY, tmp_dir,
-                                               flat_dict_senses)
-
-            self.assertEqual({'ari': 1.0, 'ami': 1.0}, stats)
-            self.assertEqual(len(logs.records), 1)
-            self.assertEqual(logs.records[0].getMessage(), "ARI: 1.0, AMI: 1.0")
+        self.assertEqual({'ari': 1.0}, stats)
+        self.assertEqual(len(logs.records), 1)
+        self.assertEqual(logs.records[0].getMessage(), "ARI: 1.0")

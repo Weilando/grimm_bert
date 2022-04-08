@@ -9,7 +9,7 @@ import analysis.clustering as cl
 import analysis.pipeline_blocks as pb
 import data.file_handler as fh
 from analysis.linkage_name import LinkageName
-from data.corpus_handler import CorpusName
+from data.corpus_handler import CorpusName, CorpusHandler
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_path)
@@ -56,18 +56,18 @@ def is_max_dist_defined(max_dist: Union[float, None]) -> bool:
     return max_dist is not None and max_dist > 0.0
 
 
-def create_dictionary(corpus_name: CorpusName, corpus_cache: str,
-                      model_cache: str, results_path: str,
-                      linkage_name: LinkageName, max_dist: float) -> None:
+def create_dictionary(
+        corpus: CorpusHandler, model_cache: str, results_path: str,
+        linkage_name: LinkageName, max_dist: float) -> None:
     """ Creates a dictionary from the given corpus with word vectors from
     CharacterBERT and hierarchical clustering with the specified linkage
     criterion and maximum distance. """
-    stats = {'corpus_name': corpus_name, 'linkage_name': linkage_name,
+    stats = {'corpus_name': corpus.corpus_name, 'linkage_name': linkage_name,
              'max_dist': max_dist}
 
     abs_results_path = fh.add_and_get_abs_path(results_path)
-    word_vectors, id_map = pb.get_word_vectors(
-        corpus_name, corpus_cache, model_cache, abs_results_path)
+    word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,
+                                               abs_results_path)
 
     stats.update(ag.count_total_and_unique(id_map, 'token'))
     id_map = ag.collect_references_and_word_vectors(id_map, 'token')
@@ -76,45 +76,49 @@ def create_dictionary(corpus_name: CorpusName, corpus_cache: str,
                                               linkage_name, max_dist)
     logging.info(f"Generated dictionary.")
     fh.save_df(abs_results_path,
-               fh.gen_dictionary_file_name(corpus_name, linkage_name, max_dist),
+               fh.gen_dictionary_file_name(corpus.corpus_name, linkage_name,
+                                           max_dist),
                dictionary)
 
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
-    stats.update(pb.evaluate_clustering(corpus_name, corpus_cache, dict_senses))
+    stats.update(pb.evaluate_clustering(corpus, dict_senses))
     fh.save_stats(abs_results_path,
-                  fh.gen_stats_file_name(corpus_name, linkage_name, max_dist),
+                  fh.gen_stats_file_name(corpus.corpus_name, linkage_name,
+                                         max_dist),
                   stats)
 
 
 def create_dictionary_with_known_sense_counts(
-        corpus_name: CorpusName, corpus_cache: str, model_cache: str,
-        results_path: str, linkage_name: LinkageName) -> None:
+        corpus: CorpusHandler, model_cache: str, results_path: str,
+        linkage_name: LinkageName) -> None:
     """ Creates a dictionary from the given corpus with word vectors from
     CharacterBERT and hierarchical clustering with the specified linkage
     criterion and the true number of unique senses per token. """
-    stats = {'corpus_name': corpus_name, 'linkage_name': linkage_name}
+    stats = {'corpus_name': corpus.corpus_name, 'linkage_name': linkage_name}
 
     abs_results_path = fh.add_and_get_abs_path(results_path)
-    word_vectors, id_map = pb.get_word_vectors(
-        corpus_name, corpus_cache, model_cache, abs_results_path)
+    word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,
+                                               abs_results_path)
 
     stats.update(ag.count_total_and_unique(id_map, 'token'))
     id_map = ag.collect_references_and_word_vectors(id_map, 'token')
-    id_map = pb.add_sense_counts_to_id_map(corpus_name, corpus_cache, id_map)
+    id_map = pb.add_sense_counts_to_id_map(corpus, id_map)
 
     dictionary = cl.cluster_vectors_per_token_with_known_sense_count(
         word_vectors, id_map, linkage_name)
     logging.info(f"Generated dictionary.")
     fh.save_df(abs_results_path,
-               fh.gen_dictionary_file_name_no_dist(corpus_name, linkage_name),
+               fh.gen_dictionary_file_name_no_dist(corpus.corpus_name,
+                                                   linkage_name),
                dictionary)
 
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
-    stats.update(pb.evaluate_clustering(corpus_name, corpus_cache, dict_senses))
+    stats.update(pb.evaluate_clustering(corpus, dict_senses))
     fh.save_stats(abs_results_path,
-                  fh.gen_stats_file_name_no_dist(corpus_name, linkage_name),
+                  fh.gen_stats_file_name_no_dist(corpus.corpus_name,
+                                                 linkage_name),
                   stats)
 
 
@@ -124,14 +128,14 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=args.log.upper(),
                         format='%(levelname)s: %(message)s')
+    corpus_handler = CorpusHandler(args.corpus_name, args.corpus_cache)
 
     if is_max_dist_defined(args.max_dist):
         create_dictionary(
-            corpus_name=args.corpus_name, corpus_cache=args.corpus_cache,
+            corpus=corpus_handler,
             model_cache=args.model_cache, results_path=args.results_path,
             linkage_name=args.linkage_name, max_dist=args.max_dist)
     else:
         create_dictionary_with_known_sense_counts(
-            corpus_name=args.corpus_name, corpus_cache=args.corpus_cache,
-            model_cache=args.model_cache, results_path=args.results_path,
-            linkage_name=args.linkage_name)
+            corpus=corpus_handler, model_cache=args.model_cache,
+            results_path=args.results_path, linkage_name=args.linkage_name)
