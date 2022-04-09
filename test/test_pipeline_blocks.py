@@ -1,9 +1,13 @@
+from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest.mock import patch
 
+import numpy as np
 import pandas as pd
 
 from analysis import pipeline_blocks as pb
+from data.corpus_handler import CorpusHandler
+from data.corpus_name import CorpusName
 
 
 class TestPipelineBlocks(TestCase):
@@ -31,23 +35,50 @@ class TestPipelineBlocks(TestCase):
         corpus.get_tagged_tokens.return_value = pd.DataFrame({
             'token': ['A', 'b', 'a', 'b', '.'],
             'sense': ['a0', 'b0', 'a0', 'b1', '.0']})
-        id_map = pd.DataFrame({
-            'token': ['a', 'b', '.'],
-            'word_vector_id': [[0, 2], [1, 3], [4]],
-            'reference_id': [[0, 0], [0, 0], [0]]})
+        id_map = pd.DataFrame({'token': ['a', 'b', '.'],
+                               'word_vector_id': [[0, 2], [1, 3], [4]],
+                               'reference_id': [[0, 0], [0, 0], [0]]})
+        expected = pd.DataFrame({'token': ['a', 'b', '.'],
+                                 'word_vector_id': [[0, 2], [1, 3], [4]],
+                                 'reference_id': [[0, 0], [0, 0], [0]],
+                                 'n_senses': [1, 2, 1]})
 
         with self.assertLogs(level="INFO") as captured_logs:
             result = pb.add_sense_counts_to_id_map(corpus, id_map)
 
-            expected = pd.DataFrame({
-                'token': ['a', 'b', '.'],
-                'word_vector_id': [[0, 2], [1, 3], [4]],
-                'reference_id': [[0, 0], [0, 0], [0]],
-                'n_senses': [1, 2, 1]})
         pd.testing.assert_frame_equal(expected, result)
         self.assertEqual(len(captured_logs.records), 1)
         self.assertIn("Loaded ground truth number of senses per token.",
                       captured_logs.output[0])
+
+    @patch('data.file_handler.does_file_exist', return_value=True)
+    def test_does_word_vector_cache_exist(self, does_file_exist):
+        """ Should return True, as both files exist. """
+        self.assertTrue(pb.does_word_vector_cache_exist(
+            '/path', 'word_vec_file', 'raw_id_map_file'))
+        self.assertEqual(2, does_file_exist.call_count)
+        does_file_exist.assert_any_call('/path', 'word_vec_file')
+        does_file_exist.assert_any_call('/path', 'raw_id_map_file')
+
+    @patch('data.file_handler.does_file_exist', return_value=False)
+    def test_does_word_vector_cache_exist_false(self, does_file_exist):
+        """ Should return False, as at least one file is missing. """
+        self.assertFalse(pb.does_word_vector_cache_exist(
+            '/path', 'word_vec_file', 'raw_id_map_file'))
+        does_file_exist.assert_called()
+
+    @patch('analysis.pipeline_blocks.calculate_word_vectors',
+           return_value=(np.ones(3), pd.DataFrame({'a': [42]})))
+    def test_get_word_vectors_calculate(self, calculate_word_vectors):
+        """ Should calculate the word vectors and id_map from scratch, as no
+        cached files exist. """
+        with TemporaryDirectory() as tmp_dir:
+            corpus = CorpusHandler(CorpusName.TOY, tmp_dir)
+            word_vectors, id_map = pb.get_word_vectors(corpus, tmp_dir, tmp_dir)
+
+        np.testing.assert_array_equal(np.ones(3), word_vectors)
+        pd.testing.assert_frame_equal(pd.DataFrame({'a': [42]}), id_map)
+        calculate_word_vectors.assert_called()
 
     @patch('data.corpus_handler.CorpusHandler')
     def test_evaluate_clustering(self, corpus):

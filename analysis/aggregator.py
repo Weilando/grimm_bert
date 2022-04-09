@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import torch
 
+from data.corpus_handler import CorpusHandler
+
 
 def collect_references_and_word_vectors(
         df: pd.DataFrame, by: Union[str, List[str]]) -> pd.DataFrame:
@@ -74,3 +76,17 @@ def add_sense_counts_to_id_map(id_map: pd.DataFrame,
                                sense_counts: pd.DataFrame) -> pd.DataFrame:
     """ Adds the number of senses from 'sense_counts' to 'id_map'. """
     return pd.merge(id_map, sense_counts, on='token')
+
+
+def calc_corpus_statistics(corpus: CorpusHandler) -> Dict:
+    """ Calculates statistics for tokens and senses in 'corpus'. """
+    stats = {'sentence_count': corpus.get_sentences().sentence.count()}
+
+    tagged_tokens = corpus.get_tagged_tokens()
+    stats.update(count_total_and_unique(tagged_tokens, 'sense'))
+    stats.update(count_total_and_unique(tagged_tokens, 'token'))
+
+    tagged_tokens['lowercase_token'] = tagged_tokens.token.str.lower()
+    stats.update(count_total_and_unique(tagged_tokens, 'lowercase_token'))
+
+    return stats

@@ -1,4 +1,5 @@
 from unittest import main, TestCase
+from unittest.mock import patch
 
 import pandas as pd
 import torch
@@ -94,6 +95,26 @@ class TestAggregator(TestCase):
                                         'n_senses': [1, 2]})
         result_id_map = ag.add_sense_counts_to_id_map(id_map, sense_counts)
         pd.testing.assert_frame_equal(expected_id_map, result_id_map)
+
+    @patch('data.corpus_handler.CorpusHandler')
+    def test_calc_corpus_statistics(self, corpus):
+        """ Should count the unique senses per lower cased token from 'corpus'
+        and add the counts to id_map. """
+        corpus.get_tagged_tokens.return_value = pd.DataFrame({
+            'token': ['A', 'b', 'a', '.', 'A', '.'],
+            'sense': ['a0', 'b0', 'a1', '.0', 'a2', '.0']})
+        corpus.get_sentences.return_value = pd.DataFrame({
+            'sentence': [['A', 'b', 'a', ','], ['A', '.']]})
+
+        result_stats = ag.calc_corpus_statistics(corpus)
+        expected_stats = {'sentence_count': 2,
+                          'total_sense_count': 6,
+                          'unique_sense_count': 5,
+                          'total_token_count': 6,
+                          'unique_token_count': 4,
+                          'total_lowercase_token_count': 6,
+                          'unique_lowercase_token_count': 3}
+        self.assertEqual(expected_stats, result_stats)
 
 
 if __name__ == '__main__':
