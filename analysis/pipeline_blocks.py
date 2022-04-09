@@ -14,8 +14,8 @@ from data.corpus_handler import CorpusHandler
 
 
 def load_and_preprocess_sentences(corpus: CorpusHandler) -> List[List[str]]:
-    """ Loads raw sentences from the specified corpus, lowercase all tokens and
-    add special tokens to each sentence. """
+    """ Loads raw sentences from the specified corpus, lower cases all tokens
+    and adds special tokens to each sentence. """
     sentences = corpus.get_sentences_as_list()
     sentences = bt.lower_sentences(sentences)
     sentences = bt.add_special_tokens_to_each(sentences)
@@ -26,9 +26,10 @@ def load_and_preprocess_sentences(corpus: CorpusHandler) -> List[List[str]]:
 
 def add_sense_counts_to_id_map(corpus: CorpusHandler, id_map: pd.DataFrame) \
         -> pd.DataFrame:
-    """ Loads tagged tokens from the specified corpus and adds the number of
-    unique senses per token to 'id_map'. """
+    """ Loads and lower cases tagged tokens from the specified corpus and adds
+    the number of unique senses per token to 'id_map'. """
     tagged_tokens = corpus.get_tagged_tokens()
+    tagged_tokens['token'] = tagged_tokens.token.str.lower()
     sense_counts = ag.count_unique_senses_per_token(tagged_tokens)
 
     logging.info("Loaded ground truth number of senses per token.")
