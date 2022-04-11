@@ -22,7 +22,7 @@ class TestSemcorPreprocessor(TestCase):
     def test_get_tokens_and_senses_from_list(self):
         """ Should take each list element as token as is. Should lowercase each
         token and append '_S' to generate senses. """
-        df_exp = pd.DataFrame({'token': ['The', 'of', '3'],
+        df_exp = pd.DataFrame({'token': ['the', 'of', '3'],
                                'sense': ['the_S', 'of_S', '3_S']})
         df_res = sp.get_tokens_and_senses_from_list(self.token_list, '_S')
         pd.testing.assert_frame_equal(df_exp, df_res)
@@ -45,7 +45,7 @@ class TestSemcorPreprocessor(TestCase):
     def test_get_tokens_and_senses_from_tree_with_uppercase_lemma(self):
         """ Should extract the leaf as token. Should lowercase the token and
         add the WordNet sense from the root to generate the sense. """
-        df_exp = pd.DataFrame({'token': ['Friday'],
+        df_exp = pd.DataFrame({'token': ['friday'],
                                'sense': ["friday_Lemma('friday.n.01.Friday')"]})
         df_res = sp.get_tokens_and_senses_from_tree(self.token_tree_lem_up)
         pd.testing.assert_frame_equal(df_exp, df_res)
@@ -54,7 +54,7 @@ class TestSemcorPreprocessor(TestCase):
         """ Should extract the leafs as tokens. Should cut the root until each
         node is either the root or a leaf, lowercase each token and add the
         WordNet sense from the root to generate the senses. """
-        df_exp = pd.DataFrame({'token': ['Jacob', 'Grimm'],
+        df_exp = pd.DataFrame({'token': ['jacob', 'grimm'],
                                'sense': ["jacob_NE",
                                          "grimm_NE"]})
         df_res = sp.get_tokens_and_senses_from_tree(self.token_tree_sub)
@@ -66,7 +66,7 @@ class TestSemcorPreprocessor(TestCase):
         sentence = [self.token_list, self.token_tree_lem, self.token_tree_str,
                     self.token_tree_sub]
         df_exp = pd.DataFrame({
-            'token': ['The', 'of', '3', 'said', 'such', 'Jacob', 'Grimm'],
+            'token': ['the', 'of', '3', 'said', 'such', 'jacob', 'grimm'],
             'sense': ['the_S', 'of_S', '3_S', "said_Lemma('state.v.01.say')",
                       'such_such.s.00', "jacob_NE", "grimm_NE"]
         })
@@ -79,7 +79,7 @@ class TestSemcorPreprocessor(TestCase):
         sentences = [[self.token_list, self.token_tree_lem],
                      [self.token_tree_str, self.token_tree_sub]]
         df_exp = pd.DataFrame({
-            'token': ['The', 'of', '3', 'said', 'such', 'Jacob', 'Grimm'],
+            'token': ['the', 'of', '3', 'said', 'such', 'jacob', 'grimm'],
             'sense': ['the_S', 'of_S', '3_S', "said_Lemma('state.v.01.say')",
                       'such_such.s.00', "jacob_NE", "grimm_NE"]
         })

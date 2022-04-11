@@ -77,6 +77,7 @@ class TestAggregator(TestCase):
         self.assertEqual(expected, ag.count_total_and_unique(df, 'a'))
 
     def test_count_unique_senses_per_token(self):
+        """ Should group the DataFrame by 'token' and count unique senses. """
         df = pd.DataFrame({'token': ['a', 'b', 'b', 'a', 'b', 'b'],
                            'sense': ['a0', 'b0', 'b1', 'a0', 'b2', 'b1']})
         expected = pd.DataFrame({'token': ['a', 'b'], 'n_senses': [1, 3]})
@@ -84,6 +85,7 @@ class TestAggregator(TestCase):
                                       ag.count_unique_senses_per_token(df))
 
     def test_add_sense_counts_to_id_map(self):
+        """ Should append 'n_senses' from 'sense_counts' to 'id_map'. """
         id_map = pd.DataFrame({'token': [7, 42],
                                'reference_id': [[0], [0, 1, 1]],
                                'word_vector_id': [[1], [0, 2, 3]]})
@@ -96,24 +98,33 @@ class TestAggregator(TestCase):
         result_id_map = ag.add_sense_counts_to_id_map(id_map, sense_counts)
         pd.testing.assert_frame_equal(expected_id_map, result_id_map)
 
+    def test_count_polysemous_tokens(self):
+        """ Should count polysemous and monosemous tokens correctly. """
+        sense_counts = pd.DataFrame({'token': ['a', 'b', 'c', 'd', 'e'],
+                                     'n_senses': [2, 1, 3, 1, 4]})
+        self.assertEqual({'unique_polysemous_token_count': 3,
+                          'unique_monosemous_token_count': 2},
+                         ag.count_polysemous_and_monosemous_tokens(
+                             sense_counts))
+
     @patch('data.corpus_handler.CorpusHandler')
     def test_calc_corpus_statistics(self, corpus):
         """ Should count the unique senses per lower cased token from 'corpus'
         and add the counts to id_map. """
         corpus.get_tagged_tokens.return_value = pd.DataFrame({
-            'token': ['A', 'b', 'a', '.', 'A', '.'],
-            'sense': ['a0', 'b0', 'a1', '.0', 'a2', '.0']})
+            'token': ['a', 'b', 'a', '.', 'b', '.'],
+            'sense': ['a0', 'b0', 'a1', '.0', 'b0', '.0']})
         corpus.get_sentences.return_value = pd.DataFrame({
-            'sentence': [['A', 'b', 'a', ','], ['A', '.']]})
+            'sentence': [['a', 'b', 'a', '.'], ['b', '.']]})
 
         result_stats = ag.calc_corpus_statistics(corpus)
         expected_stats = {'sentence_count': 2,
                           'total_sense_count': 6,
-                          'unique_sense_count': 5,
+                          'unique_sense_count': 4,
                           'total_token_count': 6,
-                          'unique_token_count': 4,
-                          'total_lowercase_token_count': 6,
-                          'unique_lowercase_token_count': 3}
+                          'unique_token_count': 3,
+                          'unique_polysemous_token_count': 1,
+                          'unique_monosemous_token_count': 2}
         self.assertEqual(expected_stats, result_stats)
 
 

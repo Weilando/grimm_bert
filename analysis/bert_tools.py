@@ -18,7 +18,7 @@ def gen_model_cache_location(cache_directory: str, model_name: str) -> str:
 def get_character_bert_from_cache(model_cache: str) -> CharacterBertModel:
     """ Loads a general CharacterBERT model from 'model_cache'. """
     model_path = gen_model_cache_location(model_cache, 'general_character_bert')
-    return CharacterBertModel.from_pretrained(model_path)
+    return CharacterBertModel.from_pretrained(model_path)  # default: eval mode
 
 
 def lower_tokens(tokenized_sentence: List[str]) -> List[str]:

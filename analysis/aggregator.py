@@ -78,6 +78,15 @@ def add_sense_counts_to_id_map(id_map: pd.DataFrame,
     return pd.merge(id_map, sense_counts, on='token')
 
 
+def count_polysemous_and_monosemous_tokens(sense_counts: pd.DataFrame) -> Dict:
+    """ Counts the number of unique tokens with more than one and exactly one
+    unique sense. """
+    poly_token_count = sense_counts[sense_counts.n_senses > 1].token.nunique()
+    mono_token_count = sense_counts[sense_counts.n_senses == 1].token.nunique()
+    return {'unique_polysemous_token_count': poly_token_count,
+            'unique_monosemous_token_count': mono_token_count}
+
+
 def calc_corpus_statistics(corpus: CorpusHandler) -> Dict:
     """ Calculates statistics for tokens and senses in 'corpus'. """
     stats = {'sentence_count': corpus.get_sentences().sentence.count()}
@@ -86,7 +95,7 @@ def calc_corpus_statistics(corpus: CorpusHandler) -> Dict:
     stats.update(count_total_and_unique(tagged_tokens, 'sense'))
     stats.update(count_total_and_unique(tagged_tokens, 'token'))
 
-    tagged_tokens['lowercase_token'] = tagged_tokens.token.str.lower()
-    stats.update(count_total_and_unique(tagged_tokens, 'lowercase_token'))
+    sense_counts_per_token = count_unique_senses_per_token(tagged_tokens)
+    stats.update(count_polysemous_and_monosemous_tokens(sense_counts_per_token))
 
     return stats

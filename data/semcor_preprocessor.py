@@ -13,20 +13,21 @@ STD_SENSE = '_SENSE'
 
 def get_tokens_and_senses_from_list(tokens: List[str], sense: str = STD_SENSE) \
         -> pd.DataFrame:
-    """ Assigns generated, lower cased sense names to a list of tokens. """
-    senses = [f"{token.lower()}{sense}" for token in tokens]
-    return pd.DataFrame({'token': tokens, 'sense': senses})
+    """ Assigns generated sense names to a list of lower cased tokens. """
+    tokens_lower = [token.lower() for token in tokens]
+    senses = [f"{token}{sense}" for token in tokens_lower]
+    return pd.DataFrame({'token': tokens_lower, 'sense': senses})
 
 
 def get_tokens_and_senses_from_tree(tree: Tree) -> pd.DataFrame:
-    """ Assigns the corresponding sense per token. Tokens are the leaves of
-    'tree' and the common sense is their pre-terminal label. The label is either
-    a str or a nltk.corpus.wordnet.Lemma. Lower cases and prepends the token
-    itself to generate unique sense strs across tokens. """
-    tokens = tree.leaves()
+    """ Assigns a corresponding sense per lower cased token. Tokens are the
+    leaves of 'tree' and the common sense is their pre-terminal label. The label
+    is either a str or a nltk.corpus.wordnet.Lemma. Prepends the token itself to
+    generate unique senses across tokens. """
+    tokens_lower = [token.lower() for token in tree.leaves()]
     pre_terminal_sense = tree.pos()[0][1]
-    senses = [f"{token.lower()}_{pre_terminal_sense}" for token in tokens]
-    return pd.DataFrame({'token': tokens, 'sense': senses})
+    senses = [f"{token}_{pre_terminal_sense}" for token in tokens_lower]
+    return pd.DataFrame({'token': tokens_lower, 'sense': senses})
 
 
 def get_tokens_and_senses_from_sentence(sentence: List[Union[Tree, List[str]]],
