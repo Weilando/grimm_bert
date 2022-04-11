@@ -62,7 +62,8 @@ def cluster_vectors_per_token_with_known_sense_count(
     unique labels for senses. Requires the number of senses per token. """
     id_map_reduced['sense'] = id_map_reduced.apply(
         lambda r: get_n_clusters_for_token(word_vectors[r.word_vector_id],
-                                           r.token, linkage_name, r.n_senses),
+                                           r.token, linkage_name,
+                                           r.unique_sense_count),
         axis=1)
 
     return id_map_reduced

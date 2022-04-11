@@ -66,9 +66,10 @@ def count_total_and_unique(df: pd.DataFrame, column: str) -> Dict:
 
 
 def count_unique_senses_per_token(df: pd.DataFrame) -> pd.DataFrame:
-    """ Counts unique senses per token. """
+    """ Counts occurrences and unique senses per token. """
     return df.groupby(by='token') \
-        .agg(n_senses=('sense', 'nunique')) \
+        .agg(unique_sense_count=('sense', 'nunique'),
+             token_count=('token', 'count')) \
         .reset_index()
 
 
@@ -78,13 +79,15 @@ def add_sense_counts_to_id_map(id_map: pd.DataFrame,
     return pd.merge(id_map, sense_counts, on='token')
 
 
-def count_polysemous_and_monosemous_tokens(sense_counts: pd.DataFrame) -> Dict:
-    """ Counts the number of unique tokens with more than one and exactly one
-    unique sense. """
-    poly_token_count = sense_counts[sense_counts.n_senses > 1].token.nunique()
-    mono_token_count = sense_counts[sense_counts.n_senses == 1].token.nunique()
-    return {'unique_polysemous_token_count': poly_token_count,
-            'unique_monosemous_token_count': mono_token_count}
+def count_monosemous_and_polysemous_tokens(sense_counts: pd.DataFrame) -> Dict:
+    """ Counts the total and distinct number of tokens with exactly one and more
+    than one unique sense. """
+    poly = sense_counts[sense_counts.unique_sense_count > 1]
+    mono = sense_counts[sense_counts.unique_sense_count == 1]
+    return {'total_monosemous_token_count': mono.token_count.sum(),
+            'unique_monosemous_token_count': mono.token.nunique(),
+            'total_polysemous_token_count': poly.token_count.sum(),
+            'unique_polysemous_token_count': poly.token.nunique()}
 
 
 def calc_corpus_statistics(corpus: CorpusHandler) -> Dict:
@@ -96,6 +99,6 @@ def calc_corpus_statistics(corpus: CorpusHandler) -> Dict:
     stats.update(count_total_and_unique(tagged_tokens, 'token'))
 
     sense_counts_per_token = count_unique_senses_per_token(tagged_tokens)
-    stats.update(count_polysemous_and_monosemous_tokens(sense_counts_per_token))
+    stats.update(count_monosemous_and_polysemous_tokens(sense_counts_per_token))
 
     return stats

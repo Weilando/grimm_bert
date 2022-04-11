@@ -33,7 +33,7 @@ class TestPipelineBlocks(TestCase):
         """ Should count the unique senses per lower cased token from 'corpus'
         and add the counts to id_map. """
         corpus.get_tagged_tokens.return_value = pd.DataFrame({
-            'token': ['A', 'b', 'a', 'b', '.'],
+            'token': ['a', 'b', 'a', 'b', '.'],
             'sense': ['a0', 'b0', 'a0', 'b1', '.0']})
         id_map = pd.DataFrame({'token': ['a', 'b', '.'],
                                'word_vector_id': [[0, 2], [1, 3], [4]],
@@ -41,7 +41,8 @@ class TestPipelineBlocks(TestCase):
         expected = pd.DataFrame({'token': ['a', 'b', '.'],
                                  'word_vector_id': [[0, 2], [1, 3], [4]],
                                  'reference_id': [[0, 0], [0, 0], [0]],
-                                 'n_senses': [1, 2, 1]})
+                                 'unique_sense_count': [1, 2, 1],
+                                 'token_count': [2, 2, 1]})
 
         with self.assertLogs(level="INFO") as captured_logs:
             result = pb.add_sense_counts_to_id_map(corpus, id_map)

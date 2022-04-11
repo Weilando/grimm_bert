@@ -71,11 +71,11 @@ class TestClustering(TestCase):
         id_map_red = pd.DataFrame({'token': ['a', 'b'],
                                    'reference_id': [[0], [0, 0, 1]],
                                    'word_vector_id': [[1], [0, 2, 3]],
-                                   'n_senses': [1, 2]})
+                                   'unique_sense_count': [1, 2]})
         dictionary_exp = pd.DataFrame({'token': ['a', 'b'],
                                        'reference_id': [[0], [0, 0, 1]],
                                        'word_vector_id': [[1], [0, 2, 3]],
-                                       'n_senses': [1, 2],
+                                       'unique_sense_count': [1, 2],
                                        'sense': [['a_0'], ['b_0', 'b_1', 'b_0']]
                                        })
 
