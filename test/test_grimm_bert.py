@@ -1,5 +1,7 @@
 from argparse import ArgumentParser, ArgumentError
+from io import StringIO
 from unittest import TestCase, main
+from unittest.mock import patch
 
 import grimm_bert as gb
 
@@ -48,10 +50,13 @@ class TestGrimmBert(TestCase):
         self.assertIsNone(parsed_args.max_dist)
         self.assertEqual(parsed_args.log, gb.DEFAULT_LOG_LEVEL)
 
-    def test_parse_no_max_dist(self):
+    @patch('sys.stderr', new_callable=StringIO)
+    def test_parse_no_max_dist(self, mock_stderr):
         """ Should raise an ArgumentError on empty max_dist argument. """
         with self.assertRaises(ArgumentError) and self.assertRaises(SystemExit):
             self.parser.parse_args(['Toy', 'complete', '--max_dist'])
+        self.assertRegexpMatches(mock_stderr.getvalue(),
+                                 r"expected one argument")
 
     def test_is_max_dist_defined_true(self):
         self.assertTrue(gb.is_max_dist_defined(0.2))
