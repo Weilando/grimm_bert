@@ -82,7 +82,7 @@ class TestPipelineBlocks(TestCase):
         calculate_word_vectors.assert_called()
 
     @patch('data.corpus_handler.CorpusHandler')
-    def test_evaluate_clustering(self, corpus):
+    def test_calc_ari_for_clustering(self, corpus):
         """ Should calculate the ARI for a perfect clustering. """
         corpus.get_tagged_tokens.return_value = pd.DataFrame({
             'token': ['a', 'b', 'a'], 'sense': ['a0', 'b0', 'a1']})
@@ -90,8 +90,27 @@ class TestPipelineBlocks(TestCase):
             'word_vector_id': [0, 1, 2], 'sense': ['a0', 'b0', 'a1']})
 
         with self.assertLogs(level="INFO") as logs:
-            stats = pb.evaluate_clustering(corpus, flat_dict_senses)
+            stats = pb.calc_ari_for_clustering(corpus, flat_dict_senses)
 
         self.assertEqual({'ari': 1.0}, stats)
         self.assertEqual(len(logs.records), 1)
         self.assertEqual(logs.records[0].getMessage(), "ARI: 1.0")
+
+    @patch('data.corpus_handler.CorpusHandler')
+    def test_calc_ari_per_token(self, corpus):
+        """ Should add a column with one ARI per token. """
+        corpus.get_tagged_tokens.return_value = pd.DataFrame({
+            'token': ['a', 'b', 'a', 'b', '.'],
+            'sense': ['a0', 'b0', 'a0', 'b1', '.0']})
+        dictionary = pd.DataFrame({
+            'token': ['a', 'b', '.'],
+            'word_vector_id': [[0, 2], [1, 3], [4]],
+            'sense': [['a0', 'a1'], ['b0', 'b1'], ['.0']]})
+        expected = pd.DataFrame({
+            'token': ['a', 'b', '.'],
+            'word_vector_id': [[0, 2], [1, 3], [4]],
+            'sense': [['a0', 'a1'], ['b0', 'b1'], ['.0']],
+            'ari': [0.0, 1.0, 1.0]})
+
+        result = pb.calc_ari_per_token(corpus, dictionary)
+        pd.testing.assert_frame_equal(expected, result)

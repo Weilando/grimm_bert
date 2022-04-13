@@ -53,10 +53,16 @@ def extract_flat_senses(dictionary: pd.DataFrame) -> pd.DataFrame:
         .set_index('word_vector_id')
 
 
-def extract_int_senses(dictionary: pd.DataFrame) -> List[int]:
-    """ Enumerates unique senses and returns an array of those sense ids.
+def extract_int_senses_from_df(df: pd.DataFrame) -> List[int]:
+    """ Enumerates unique senses and returns a list of those sense ids.
     Flattens and sorts word_vector_ids and senses if they are lists. """
-    return dictionary.sense.factorize()[0].tolist()
+    return df.sense.factorize()[0].tolist()
+
+
+def extract_int_senses_from_list(senses: List) -> List[int]:
+    """ Enumerates unique senses and returns a list of those sense ids. """
+    # noinspection PyTypeChecker
+    return pd.factorize(senses)[0].tolist()
 
 
 def count_total_and_unique(df: pd.DataFrame, column: str) -> Dict:

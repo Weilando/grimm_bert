@@ -62,11 +62,18 @@ class TestAggregator(TestCase):
         dictionary_res = ag.extract_flat_senses(dictionary)
         pd.testing.assert_frame_equal(dictionary_exp, dictionary_res)
 
-    def test_extract_int_senses(self):
+    def test_extract_int_senses_from_df(self):
         """ Should generate a unique integer labels per sense. """
-        dictionary = pd.DataFrame({'sense': ['a', 'b', 'c', 'a', 'd']})
+        df = pd.DataFrame({'sense': ['a', 'b', 'c', 'a', 'd']})
         id_senses_exp = [0, 1, 2, 0, 3]
-        id_senses_res = ag.extract_int_senses(dictionary)
+        id_senses_res = ag.extract_int_senses_from_df(df)
+        self.assertEqual(id_senses_exp, id_senses_res)
+
+    def test_extract_int_senses_from_list(self):
+        """ Should generate a unique integer labels per sense. """
+        senses = ['a', 'b', 'c', 'a', 'd']
+        id_senses_exp = [0, 1, 2, 0, 3]
+        id_senses_res = ag.extract_int_senses_from_list(senses)
         self.assertEqual(id_senses_exp, id_senses_res)
 
     def test_count_total_and_unique(self):

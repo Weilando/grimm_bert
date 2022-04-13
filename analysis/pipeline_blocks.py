@@ -77,13 +77,28 @@ def get_word_vectors(corpus: CorpusHandler, model_cache: str,
     return word_vectors, id_map
 
 
-def evaluate_clustering(corpus: CorpusHandler, flat_dict_senses: pd.DataFrame) \
-        -> Dict:
+def calc_ari_for_clustering(corpus: CorpusHandler,
+                            flat_dict_senses: pd.DataFrame) -> Dict:
     """ Calculates the Adjusted Rand Index (ARI) for 'flat_dict_senses' and the
     ground truth for the given corpus and writes it into a statistics dict. """
-    true_senses = ag.extract_int_senses(corpus.get_tagged_tokens())
-    dict_senses = ag.extract_int_senses(flat_dict_senses)
+    true_senses = ag.extract_int_senses_from_df(corpus.get_tagged_tokens())
+    dict_senses = ag.extract_int_senses_from_df(flat_dict_senses)
     ari = adjusted_rand_score(true_senses, dict_senses)
 
     logging.info(f"ARI: {ari}")
     return {'ari': ari}
+
+
+def calc_ari_per_token(corpus: CorpusHandler, dictionary: pd.DataFrame) \
+        -> pd.DataFrame:
+    """ Adds a column with an Adjusted Rand Index (ARI) per token and senses to
+    'dictionary' based on the ground truth for the given corpus. """
+    true_senses = np.array(ag.extract_int_senses_from_df(
+        corpus.get_tagged_tokens()))
+
+    dictionary['ari'] = dictionary.apply(
+        lambda r: adjusted_rand_score(true_senses[r.word_vector_id],
+                                      ag.extract_int_senses_from_list(r.sense)),
+        axis=1)
+
+    return dictionary
