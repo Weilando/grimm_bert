@@ -69,7 +69,7 @@ def count_unique_senses_per_token(df: pd.DataFrame) -> pd.DataFrame:
     """ Counts occurrences and unique senses per token. """
     return df.groupby(by='token') \
         .agg(unique_sense_count=('sense', 'nunique'),
-             token_count=('token', 'count')) \
+             total_token_count=('token', 'count')) \
         .reset_index()
 
 
@@ -79,14 +79,22 @@ def add_sense_counts_to_id_map(id_map: pd.DataFrame,
     return pd.merge(id_map, sense_counts, on='token')
 
 
+def count_tokens_per_sense_count(sense_counts: pd.DataFrame) -> pd.DataFrame:
+    """ Aggregates total and unique token counts per sense count. """
+    return sense_counts.groupby(by='unique_sense_count') \
+        .agg(unique_token_count=('token', 'nunique'),
+             total_token_count=('total_token_count', 'sum')) \
+        .reset_index()
+
+
 def count_monosemous_and_polysemous_tokens(sense_counts: pd.DataFrame) -> Dict:
     """ Counts the total and distinct number of tokens with exactly one and more
     than one unique sense. """
     poly = sense_counts[sense_counts.unique_sense_count > 1]
     mono = sense_counts[sense_counts.unique_sense_count == 1]
-    return {'total_monosemous_token_count': mono.token_count.sum(),
+    return {'total_monosemous_token_count': mono.total_token_count.sum(),
             'unique_monosemous_token_count': mono.token.nunique(),
-            'total_polysemous_token_count': poly.token_count.sum(),
+            'total_polysemous_token_count': poly.total_token_count.sum(),
             'unique_polysemous_token_count': poly.token.nunique()}
 
 

@@ -42,7 +42,7 @@ class TestPipelineBlocks(TestCase):
                                  'word_vector_id': [[0, 2], [1, 3], [4]],
                                  'reference_id': [[0, 0], [0, 0], [0]],
                                  'unique_sense_count': [1, 2, 1],
-                                 'token_count': [2, 2, 1]})
+                                 'total_token_count': [2, 2, 1]})
 
         with self.assertLogs(level="INFO") as captured_logs:
             result = pb.add_sense_counts_to_id_map(corpus, id_map)

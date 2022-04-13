@@ -83,32 +83,44 @@ class TestAggregator(TestCase):
                            'sense': ['a0', 'b0', 'b1', 'a0', 'b2', 'b1']})
         expected = pd.DataFrame({'token': ['a', 'b'],
                                  'unique_sense_count': [1, 3],
-                                 'token_count': [2, 4]})
+                                 'total_token_count': [2, 4]})
         pd.testing.assert_frame_equal(expected,
                                       ag.count_unique_senses_per_token(df))
 
     def test_add_sense_counts_to_id_map(self):
-        """ Should append 'unique_sense_count' and 'token_count' from
+        """ Should append 'unique_sense_count' and 'total_token_count' from
         'sense_counts' to 'id_map'. """
         id_map = pd.DataFrame({'token': ['a', 'b'],
                                'reference_id': [[0], [0, 1, 1]],
                                'word_vector_id': [[1], [0, 2, 3]]})
         sense_counts = pd.DataFrame({'token': ['a', 'b'],
                                      'unique_sense_count': [1, 2],
-                                     'token_count': [2, 4]})
+                                     'total_token_count': [2, 4]})
         expected_id_map = pd.DataFrame({'token': ['a', 'b'],
                                         'reference_id': [[0], [0, 1, 1]],
                                         'word_vector_id': [[1], [0, 2, 3]],
                                         'unique_sense_count': [1, 2],
-                                        'token_count': [2, 4]})
+                                        'total_token_count': [2, 4]})
         result_id_map = ag.add_sense_counts_to_id_map(id_map, sense_counts)
         pd.testing.assert_frame_equal(expected_id_map, result_id_map)
+
+    def test_count_tokens_per_sense_count(self):
+        """ Should aggregate the correct number of total and unique tokens per
+        sense count. """
+        sense_counts = pd.DataFrame({'token': ['a', 'b', 'c'],
+                                     'unique_sense_count': [3, 4, 3],
+                                     'total_token_count': [2, 5, 4]})
+        expected = pd.DataFrame({'unique_sense_count': [3, 4],
+                                 'unique_token_count': [2, 1],
+                                 'total_token_count': [6, 5]})
+        result = ag.count_tokens_per_sense_count(sense_counts)
+        pd.testing.assert_frame_equal(expected, result)
 
     def test_count_monosemous_and_polysemous_tokens(self):
         """ Should count polysemous and monosemous tokens correctly. """
         sense_counts = pd.DataFrame({'token': ['a', 'b', 'c', 'd', 'e'],
                                      'unique_sense_count': [3, 1, 5, 1, 4],
-                                     'token_count': [5, 5, 5, 5, 5]})
+                                     'total_token_count': [5, 5, 5, 5, 5]})
         expected = {'total_monosemous_token_count': 10,
                     'unique_monosemous_token_count': 2,
                     'total_polysemous_token_count': 15,
