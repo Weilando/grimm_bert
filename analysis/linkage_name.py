@@ -11,4 +11,4 @@ class LinkageName(str, Enum):
 
     @classmethod
     def get_names(cls) -> List[str]:
-        return [name.value for name in cls]
+        return list(map(lambda name: name.value, cls))

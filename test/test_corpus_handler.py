@@ -9,7 +9,18 @@ from data.corpus_handler import CorpusName, CorpusHandler
 
 class TestCorpusName(TestCase):
     def test_get_names(self):
-        self.assertEqual(['Toy', 'SemCor'], CorpusName.get_names())
+        expected = ['toy', 'semcor', 'semeval2007', 'semeval2013',
+                    'semeval2015', 'senseval2', 'senseval3']
+        self.assertEqual(expected, CorpusName.get_names())
+
+    def test_is_wsdeval_name(self):
+        self.assertTrue(CorpusName.SENSEVAL2.is_wsdeval_name)
+        self.assertTrue(CorpusName.SENSEVAL3.is_wsdeval_name)
+        self.assertTrue(CorpusName.SEMEVAL07.is_wsdeval_name)
+        self.assertTrue(CorpusName.SEMEVAL13.is_wsdeval_name)
+        self.assertTrue(CorpusName.SEMEVAL15.is_wsdeval_name)
+        self.assertFalse(CorpusName.TOY.is_wsdeval_name)
+        self.assertFalse(CorpusName.SEMCOR.is_wsdeval_name)
 
 
 class TestCorpusHandler(TestCase):
@@ -18,17 +29,8 @@ class TestCorpusHandler(TestCase):
             corpus = CorpusHandler(CorpusName.TOY, tmp_dir_name)
             self.assertEqual(CorpusName.TOY, corpus.corpus_name)
             self.assertEqual(tmp_dir_name, corpus.corpus_path)
-            self.assertEqual("Toy-sentences.pkl", corpus.sentences_name)
-            self.assertEqual("Toy-tagged_tokens.pkl",
-                             corpus.tagged_tokens_name)
-
-    def test_set_up_semcor(self):
-        with TemporaryDirectory() as tmp_dir_name:
-            corpus = CorpusHandler(CorpusName.SEMCOR, tmp_dir_name)
-            self.assertEqual(CorpusName.SEMCOR, corpus.corpus_name)
-            self.assertEqual(tmp_dir_name, corpus.corpus_path)
-            self.assertEqual("SemCor-sentences.pkl", corpus.sentences_name)
-            self.assertEqual("SemCor-tagged_tokens.pkl",
+            self.assertEqual("toy-sentences.pkl", corpus.sentences_name)
+            self.assertEqual("toy-tagged_tokens.pkl",
                              corpus.tagged_tokens_name)
 
     def test_get_sentences(self):
