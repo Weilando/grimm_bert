@@ -44,6 +44,7 @@ class WsdevalPreprocessor(CorpusPreprocessor):
                  corpus_name: CorpusName = CorpusName.SEMEVAL15,
                  corpus_cache_path: str = DEFAULT_CORPUS_CACHE_DIR):
         super().__init__(corpus_name, corpus_cache_path)
+        assert corpus_name.is_wsdeval_name
         self.xml_tree = add_senses_and_simplify_xml(xml_tree, gold_keys)
 
     def get_sentences(self) -> pd.DataFrame:
@@ -59,7 +60,7 @@ class WsdevalPreprocessor(CorpusPreprocessor):
 
 if __name__ == '__main__':
     corpora = [CorpusName.SEMEVAL07, CorpusName.SEMEVAL13, CorpusName.SEMEVAL15,
-               CorpusName.SENSEVAL2, CorpusName.SENSEVAL3]
+               CorpusName.SENSEVAL2, CorpusName.SENSEVAL3, CorpusName.SEMCOR]
 
     for corpus in corpora:
         wsd_eval_preprocessor = WsdevalPreprocessor(

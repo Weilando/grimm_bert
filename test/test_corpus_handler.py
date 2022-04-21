@@ -14,13 +14,13 @@ class TestCorpusName(TestCase):
         self.assertEqual(expected, CorpusName.get_names())
 
     def test_is_wsdeval_name(self):
+        self.assertFalse(CorpusName.TOY.is_wsdeval_name)
+        self.assertTrue(CorpusName.SEMCOR.is_wsdeval_name)
         self.assertTrue(CorpusName.SENSEVAL2.is_wsdeval_name)
         self.assertTrue(CorpusName.SENSEVAL3.is_wsdeval_name)
         self.assertTrue(CorpusName.SEMEVAL07.is_wsdeval_name)
         self.assertTrue(CorpusName.SEMEVAL13.is_wsdeval_name)
         self.assertTrue(CorpusName.SEMEVAL15.is_wsdeval_name)
-        self.assertFalse(CorpusName.TOY.is_wsdeval_name)
-        self.assertFalse(CorpusName.SEMCOR.is_wsdeval_name)
 
 
 class TestCorpusHandler(TestCase):

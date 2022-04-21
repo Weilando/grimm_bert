@@ -16,7 +16,7 @@ The input files from wsdeval need to be in [data/wsdeval_corpora](data/wsdeval_c
 |---------|------------------------------------------------------------|-----------------------------------------------------------|
 | toy     | Simple corpus for small tests.                             | [data.ToyPreprocessor](/data/toy_preprocessor.py)         |
 | wsdeval | Evaluation corpora from semeval2007/13/15 and senseval2/3. | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) |
-| semcor  | Semantic concordance with more than 800k tokens.           | [data.SemcorPreprocessor](/data/semcor_preprocessor.py)   |
+| semcor  | Semantic concordance with more than 800k tokens.           | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) |
 
 To add a new corpus, create a subclass of [/data/CorpusPreprocessor](/data/corpus_preprocessor.py).
 You might want to apply an uncased tokenizer, e.g., `BertTokenizer.basic_tokenizer`.

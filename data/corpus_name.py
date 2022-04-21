@@ -19,4 +19,4 @@ class CorpusName(str, Enum):
     def is_wsdeval_name(self):
         """ Checks if the corpus is available in WSDEval. """
         return self in [self.SEMEVAL07, self.SEMEVAL13, self.SEMEVAL15,
-                        self.SENSEVAL2, self.SENSEVAL3]
+                        self.SENSEVAL2, self.SENSEVAL3, self.SEMCOR]
