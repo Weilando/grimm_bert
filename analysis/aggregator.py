@@ -2,7 +2,6 @@ from typing import Union, List, Dict
 
 import numpy as np
 import pandas as pd
-import torch
 
 from data.corpus_handler import CorpusHandler
 
@@ -23,13 +22,6 @@ def unpack_per_word_vector(df: pd.DataFrame, to_unpack: List[str]) \
         .infer_objects() \
         .sort_values('word_vector_id') \
         .reset_index(drop=True)
-
-
-def concat_word_vectors(word_vectors: List[torch.Tensor]) -> torch.tensor:
-    """ Concatenates word-vectors into a matrix. Each row is a word-vector. """
-    assert all(len(v.shape) > 1 for v in word_vectors)
-
-    return torch.cat(word_vectors, dim=0)
 
 
 def gen_ids_for_vectors_and_references(tokenized_sentences: List[List[str]]) \

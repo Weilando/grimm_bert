@@ -44,6 +44,13 @@ def calc_word_vectors(encoded_sentence: torch.Tensor,
         return model(encoded_sentence)[0]
 
 
+def concat_word_vectors(word_vectors: List[torch.Tensor]) -> torch.tensor:
+    """ Concatenates word-vectors into a matrix. Each row is a word-vector. """
+    assert all(len(v.shape) > 1 for v in word_vectors)
+
+    return torch.cat(word_vectors, dim=0)
+
+
 def strip_each(tokenized_sentences: List[Union[List[str], torch.Tensor]]) \
         -> List[Union[List[str], torch.Tensor]]:
     """ Drop the first and last token from every sentence or the first and last
@@ -74,7 +81,7 @@ def embed_sentences(tokenized_sentences: List[List[str]],
     tokenized_sentences = strip_each(tokenized_sentences)
     word_vectors = strip_each(word_vectors)
 
-    word_vectors = ag.concat_word_vectors(word_vectors)
+    word_vectors = concat_word_vectors(word_vectors)
     id_map = ag.gen_ids_for_vectors_and_references(tokenized_sentences)
 
     return word_vectors.numpy(), id_map

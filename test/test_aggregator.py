@@ -2,7 +2,6 @@ from unittest import main, TestCase
 from unittest.mock import patch
 
 import pandas as pd
-import torch
 
 from analysis import aggregator as ag
 
@@ -42,13 +41,6 @@ class TestAggregator(TestCase):
 
         df_result = ag.gen_ids_for_vectors_and_references(tokenized_sentences)
         pd.testing.assert_frame_equal(df_result, df_expected)
-
-    def test_concat_word_vectors(self):
-        """ Should generate a matrix with input vectors as rows. """
-        word_vectors = [torch.tensor([[1, 1], [1, 1]]), torch.tensor([[0, 0]])]
-        expected = torch.tensor([[1, 1], [1, 1], [0, 0]])
-        result = ag.concat_word_vectors(word_vectors)
-        self.assertTrue(torch.equal(expected, result))
 
     def test_extract_flat_senses(self):
         """ Should unpack and sort senses regarding their word_vector_ids.

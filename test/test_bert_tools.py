@@ -37,6 +37,13 @@ class TestBertTools(TestCase):
         self.assertTrue(torch.equal(res, torch.ones((3, 2))))
         mock_model.assert_called_once_with(torch.ones(1))
 
+    def test_concat_word_vectors(self):
+        """ Should generate a matrix with input vectors as rows. """
+        word_vectors = [torch.tensor([[1, 1], [1, 1]]), torch.tensor([[0, 0]])]
+        expected = torch.tensor([[1, 1], [1, 1], [0, 0]])
+        result = bt.concat_word_vectors(word_vectors)
+        self.assertTrue(torch.equal(expected, result))
+
     def test_strip_tokenized_sentences(self):
         tokenized_sentences = [['[CLS]', 'hi', '[SEP]'],
                                ['[CLS]', 'hello', 'world', '[SEP]']]
