@@ -65,7 +65,7 @@ class ToyPreprocessor(CorpusPreprocessor):
 
     def get_tagged_tokens(self) -> pd.DataFrame:
         return pd.DataFrame({'token': flatten_list(SENTENCES),
-                             'sense': SENSES})
+                             'sense': SENSES, 'tagged_sense': True})
 
 
 if __name__ == '__main__':

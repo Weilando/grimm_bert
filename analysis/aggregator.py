@@ -45,16 +45,16 @@ def extract_flat_senses(dictionary: pd.DataFrame) -> pd.DataFrame:
         .set_index('word_vector_id')
 
 
-def extract_int_senses_from_df(df: pd.DataFrame) -> List[int]:
+def extract_int_senses_from_df(df: pd.DataFrame) -> np.ndarray:
     """ Enumerates unique senses and returns a list of those sense ids.
     Flattens and sorts word_vector_ids and senses if they are lists. """
-    return df.sense.factorize()[0].tolist()
+    return df.sense.factorize()[0]
 
 
-def extract_int_senses_from_list(senses: List) -> List[int]:
+def extract_int_senses_from_list(senses: List) -> np.ndarray:
     """ Enumerates unique senses and returns a list of those sense ids. """
     # noinspection PyTypeChecker
-    return pd.factorize(senses)[0].tolist()
+    return pd.factorize(senses)[0]
 
 
 def count_total_and_unique(df: pd.DataFrame, column: str) -> Dict:
@@ -101,6 +101,22 @@ def calc_corpus_statistics(corpus: CorpusHandler) -> Dict:
     stats = {'sentence_count': corpus.get_sentences().sentence.count()}
 
     tagged_tokens = corpus.get_tagged_tokens()
+    stats.update({'tagged_sense_count': tagged_tokens.tagged_sense.sum()})
+    stats.update(count_total_and_unique(tagged_tokens, 'sense'))
+    stats.update(count_total_and_unique(tagged_tokens, 'token'))
+
+    sense_counts_per_token = count_unique_senses_per_token(tagged_tokens)
+    stats.update(count_monosemous_and_polysemous_tokens(sense_counts_per_token))
+
+    return stats
+
+
+def calc_corpus_statistics_for_tagged_senses(corpus: CorpusHandler) -> Dict:
+    """ Calculates statistics for tokens and senses in 'corpus'. """
+    stats = {'sentence_count': corpus.get_sentences().sentence.count()}
+
+    tagged_tokens = corpus.get_tagged_tokens()
+    tagged_tokens = tagged_tokens[tagged_tokens.tagged_sense]
     stats.update(count_total_and_unique(tagged_tokens, 'sense'))
     stats.update(count_total_and_unique(tagged_tokens, 'token'))
 

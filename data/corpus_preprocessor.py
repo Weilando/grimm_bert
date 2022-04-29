@@ -3,6 +3,8 @@ import pandas as pd
 from data import file_handler as fh
 from data.corpus_handler import CorpusName
 
+STD_SENSE = '_SENSE'
+
 
 class CorpusPreprocessor(object):
     def __init__(self, corpus_name: CorpusName, corpus_cache_path: str):
@@ -27,6 +29,7 @@ class CorpusPreprocessor(object):
         assert 'sentence' in sentences.columns
         assert 'token' in tagged_tokens.columns
         assert 'sense' in tagged_tokens.columns
+        assert 'tagged_sense' in tagged_tokens.columns
 
         fh.save_df(self.corpus_cache_path,
                    fh.gen_sentences_file_name(self.corpus_name), sentences)

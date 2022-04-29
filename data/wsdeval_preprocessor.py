@@ -3,10 +3,8 @@ from xml.etree import ElementTree
 import pandas as pd
 
 from data.corpus_handler import CorpusName
-from data.corpus_preprocessor import CorpusPreprocessor
+from data.corpus_preprocessor import CorpusPreprocessor, STD_SENSE
 from grimm_bert import DEFAULT_CORPUS_CACHE_DIR
-
-STD_SENSE = '_SENSE'
 
 
 def get_xml_tree(xml_file_path: str) -> ElementTree.Element:
@@ -27,15 +25,17 @@ def add_senses_and_simplify_xml(xml_tree: ElementTree.Element,
     """ Adds sense tags to 'xml_tree' and transforms 'wf' and 'instance' tags
     into 'token' tags. Generates sense names with the token (lemma) and a sense
     suffix. The sense is either the standard sense for 'wf', or the gold key
-    sense for 'instance'. """
+    sense for 'instance'. Adds a flag to indicate tagged senses. """
     for sentence in xml_tree.iter('sentence'):
         for token in sentence.iter('wf'):
             token.tag = 'token'
             token.set('sense', f"{token.text.lower()}{STD_SENSE}")
+            token.set('tagged_sense', 'False')
         for token in sentence.iter('instance'):
             token.tag = 'token'
             sense = gold_keys.loc[token.get('id')].sense
             token.set('sense', f"{token.text.lower()}_{sense}")
+            token.set('tagged_sense', 'True')
     return xml_tree
 
 
@@ -55,7 +55,10 @@ class WsdevalPreprocessor(CorpusPreprocessor):
     def get_tagged_tokens(self) -> pd.DataFrame:
         tokens = [token.text.lower() for token in self.xml_tree.iter('token')]
         senses = [token.get('sense') for token in self.xml_tree.iter('token')]
-        return pd.DataFrame({'token': tokens, 'sense': senses})
+        annotated_senses = [eval(token.get('tagged_sense'))
+                            for token in self.xml_tree.iter('token')]
+        return pd.DataFrame({'token': tokens, 'sense': senses,
+                             'tagged_sense': annotated_senses})
 
 
 if __name__ == '__main__':

@@ -72,7 +72,9 @@ class TestWsdevalPreprocessor(TestCase):
                       'it', 'work', '?'],
             'sense': ['this_SENSE', 'doc_document0', 'is_SENSE', 'a_SENSE',
                       'summary_summary0', '._SENSE', 'how_SENSE', 'does_SENSE',
-                      'it_SENSE', 'work_SENSE', '?_SENSE']})
+                      'it_SENSE', 'work_SENSE', '?_SENSE'],
+            'tagged_sense': [False, True, False, False, True, False, False,
+                             False, False, False, False]})
         pd.testing.assert_frame_equal(expected_tokens, tokens)
 
 

@@ -82,26 +82,48 @@ class TestPipelineBlocks(TestCase):
         calculate_word_vectors.assert_called()
 
     @patch('data.corpus_handler.CorpusHandler')
-    def test_calc_ari_for_clustering(self, corpus):
-        """ Should calculate the ARI for a perfect clustering. """
+    def test_calc_ari_for_all_senses(self, corpus):
+        """ Should calculate the ARI for a perfect clustering. Should consider
+        all senses and too many clusters. """
         corpus.get_tagged_tokens.return_value = pd.DataFrame({
-            'token': ['a', 'b', 'a'], 'sense': ['a0', 'b0', 'a1']})
+            'token': ['a', 'a'], 'sense': ['a0', 'a0'],
+            'tagged_sense': [True, False]})
         flat_dict_senses = pd.DataFrame({
-            'word_vector_id': [0, 1, 2], 'sense': ['a0', 'b0', 'a1']})
+            'word_vector_id': [0, 1], 'sense': ['a0', 'a1']})
 
         with self.assertLogs(level="INFO") as logs:
-            stats = pb.calc_ari_for_clustering(corpus, flat_dict_senses)
+            stats = pb.calc_ari_for_all_senses(corpus, flat_dict_senses)
 
-        self.assertEqual({'ari': 1.0}, stats)
+        self.assertEqual({'ari_all': 0.0}, stats)
         self.assertEqual(len(logs.records), 1)
-        self.assertEqual(logs.records[0].getMessage(), "ARI: 1.0")
+        self.assertEqual(logs.records[0].getMessage(), "ARI (all senses): 0.0")
+
+    @patch('data.corpus_handler.CorpusHandler')
+    def test_calc_ari_for_tagged_senses(self, corpus):
+        """ Should calculate the ARI for a perfect clustering. Should only
+        consider the tagged token and therefore a perfect score. """
+        corpus.get_tagged_tokens.return_value = pd.DataFrame({
+            'token': ['a', 'a'], 'sense': ['a0', 'a0'],
+            'tagged_sense': [True, False]})
+        flat_dict_senses = pd.DataFrame({
+            'word_vector_id': [0, 1], 'sense': ['a0', 'a1']})
+
+        with self.assertLogs(level="INFO") as logs:
+            stats = pb.calc_ari_for_tagged_senses(corpus, flat_dict_senses)
+
+        self.assertEqual({'ari_tagged': 1.0}, stats)
+        self.assertEqual(len(logs.records), 1)
+        self.assertEqual(logs.records[0].getMessage(),
+                         "ARI (tagged senses): 1.0")
 
     @patch('data.corpus_handler.CorpusHandler')
     def test_calc_ari_per_token(self, corpus):
-        """ Should add a column with one ARI per token. """
+        """ Should add a column with one ARI per token and an indicator for
+        tokens with completely tagged senses. """
         corpus.get_tagged_tokens.return_value = pd.DataFrame({
             'token': ['a', 'b', 'a', 'b', '.'],
-            'sense': ['a0', 'b0', 'a0', 'b1', '.0']})
+            'sense': ['a0', 'b0', 'a0', 'b1', '.0'],
+            'tagged_sense': [True, True, True, False, False]})
         dictionary = pd.DataFrame({
             'token': ['a', 'b', '.'],
             'word_vector_id': [[0, 2], [1, 3], [4]],
@@ -110,7 +132,8 @@ class TestPipelineBlocks(TestCase):
             'token': ['a', 'b', '.'],
             'word_vector_id': [[0, 2], [1, 3], [4]],
             'sense': [['a0', 'a1'], ['b0', 'b1'], ['.0']],
-            'ari': [0.0, 1.0, 1.0]})
+            'ari': [0.0, 1.0, 1.0],
+            'tagged_token': [True, False, False]})
 
         result = pb.calc_ari_per_token(corpus, dictionary)
         pd.testing.assert_frame_equal(expected, result)

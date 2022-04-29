@@ -1,6 +1,7 @@
 from unittest import main, TestCase
 from unittest.mock import patch
 
+import numpy as np
 import pandas as pd
 
 from analysis import aggregator as ag
@@ -57,16 +58,16 @@ class TestAggregator(TestCase):
     def test_extract_int_senses_from_df(self):
         """ Should generate a unique integer labels per sense. """
         df = pd.DataFrame({'sense': ['a', 'b', 'c', 'a', 'd']})
-        id_senses_exp = [0, 1, 2, 0, 3]
+        id_senses_exp = np.array([0, 1, 2, 0, 3])
         id_senses_res = ag.extract_int_senses_from_df(df)
-        self.assertEqual(id_senses_exp, id_senses_res)
+        np.testing.assert_array_equal(id_senses_exp, id_senses_res)
 
     def test_extract_int_senses_from_list(self):
         """ Should generate a unique integer labels per sense. """
         senses = ['a', 'b', 'c', 'a', 'd']
-        id_senses_exp = [0, 1, 2, 0, 3]
+        id_senses_exp = np.array([0, 1, 2, 0, 3])
         id_senses_res = ag.extract_int_senses_from_list(senses)
-        self.assertEqual(id_senses_exp, id_senses_res)
+        np.testing.assert_array_equal(id_senses_exp, id_senses_res)
 
     def test_count_total_and_unique(self):
         """ Should generate a dict with correct statistics. """
@@ -133,12 +134,14 @@ class TestAggregator(TestCase):
         and add the counts to id_map. """
         corpus.get_tagged_tokens.return_value = pd.DataFrame({
             'token': ['a', 'b', 'a', '.', 'b', '.'],
-            'sense': ['a0', 'b0', 'a1', '.0', 'b0', '.0']})
+            'sense': ['a0', 'b0', 'a1', '.0', 'b0', '.0'],
+            'tagged_sense': [True, True, True, True, True, False]})
         corpus.get_sentences.return_value = pd.DataFrame({
             'sentence': [['a', 'b', 'a', '.'], ['b', '.']]})
 
         result_stats = ag.calc_corpus_statistics(corpus)
         expected_stats = {'sentence_count': 2,
+                          'tagged_sense_count': 5,
                           'total_sense_count': 6,
                           'unique_sense_count': 4,
                           'total_token_count': 6,
