@@ -82,23 +82,6 @@ class TestPipelineBlocks(TestCase):
         calculate_word_vectors.assert_called()
 
     @patch('data.corpus_handler.CorpusHandler')
-    def test_calc_ari_for_all_senses(self, corpus):
-        """ Should calculate the ARI for a perfect clustering. Should consider
-        all senses and too many clusters. """
-        corpus.get_tagged_tokens.return_value = pd.DataFrame({
-            'token': ['a', 'a'], 'sense': ['a0', 'a0'],
-            'tagged_sense': [True, False]})
-        flat_dict_senses = pd.DataFrame({
-            'word_vector_id': [0, 1], 'sense': ['a0', 'a1']})
-
-        with self.assertLogs(level="INFO") as logs:
-            stats = pb.calc_ari_for_all_senses(corpus, flat_dict_senses)
-
-        self.assertEqual({'ari_all': 0.0}, stats)
-        self.assertEqual(len(logs.records), 1)
-        self.assertEqual(logs.records[0].getMessage(), "ARI (all senses): 0.0")
-
-    @patch('data.corpus_handler.CorpusHandler')
     def test_calc_ari_for_tagged_senses(self, corpus):
         """ Should calculate the ARI for a perfect clustering. Should only
         consider the tagged token and therefore a perfect score. """

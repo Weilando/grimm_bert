@@ -129,25 +129,25 @@ class TestAggregator(TestCase):
         self.assertEqual(expected, result)
 
     @patch('data.corpus_handler.CorpusHandler')
-    def test_calc_corpus_statistics(self, corpus):
-        """ Should count the unique senses per lower cased token from 'corpus'
-        and add the counts to id_map. """
+    def test_calc_corpus_statistics_for_tagged_senses(self, corpus):
+        """ Should count types of tokens and senses for 'corpus'. """
         corpus.get_tagged_tokens.return_value = pd.DataFrame({
-            'token': ['a', 'b', 'a', '.', 'b', '.'],
-            'sense': ['a0', 'b0', 'a1', '.0', 'b0', '.0'],
-            'tagged_sense': [True, True, True, True, True, False]})
+            'token': ['a', 'a', 'a', 'a', '.', 'b', 'c', '.'],
+            'sense': ['a0', 'a1', 'a2', 'a3', '.0', 'b0', 'c0', '.0'],
+            'tagged_sense': [True, True, False, False, True, True, True, True]})
         corpus.get_sentences.return_value = pd.DataFrame({
-            'sentence': [['a', 'b', 'a', '.'], ['b', '.']]})
+            'sentence': [['a', 'a', 'a', 'a', '.'], ['b', 'c', '.']]})
 
-        result_stats = ag.calc_corpus_statistics(corpus)
+        result_stats = ag.calc_corpus_statistics_for_tagged_senses(corpus)
         expected_stats = {'sentence_count': 2,
-                          'tagged_sense_count': 5,
+                          'total_token_count': 8,
+                          'unique_token_count': 4,
                           'total_sense_count': 6,
-                          'unique_sense_count': 4,
-                          'total_token_count': 6,
-                          'unique_token_count': 3,
+                          'unique_sense_count': 5,
+                          'total_tagged_token_count': 6,
+                          'unique_tagged_token_count': 4,
                           'total_monosemous_token_count': 4,
-                          'unique_monosemous_token_count': 2,
+                          'unique_monosemous_token_count': 3,
                           'total_polysemous_token_count': 2,
                           'unique_polysemous_token_count': 1}
         self.assertEqual(expected_stats, result_stats)

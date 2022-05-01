@@ -96,29 +96,20 @@ def count_monosemous_and_polysemous_tokens(sense_counts: pd.DataFrame) -> Dict:
             'unique_polysemous_token_count': poly.token.nunique()}
 
 
-def calc_corpus_statistics(corpus: CorpusHandler) -> Dict:
-    """ Calculates statistics for tokens and senses in 'corpus'. """
+def calc_corpus_statistics_for_tagged_senses(corpus: CorpusHandler) -> Dict:
+    """ Calculates statistics for tokens and senses in 'corpus'. Only considers
+    tokens with given sense tags as polysemous or monosemous tokens."""
     stats = {'sentence_count': corpus.get_sentences().sentence.count()}
 
     tagged_tokens = corpus.get_tagged_tokens()
-    stats.update({'tagged_sense_count': tagged_tokens.tagged_sense.sum()})
-    stats.update(count_total_and_unique(tagged_tokens, 'sense'))
     stats.update(count_total_and_unique(tagged_tokens, 'token'))
 
-    sense_counts_per_token = count_unique_senses_per_token(tagged_tokens)
-    stats.update(count_monosemous_and_polysemous_tokens(sense_counts_per_token))
-
-    return stats
-
-
-def calc_corpus_statistics_for_tagged_senses(corpus: CorpusHandler) -> Dict:
-    """ Calculates statistics for tokens and senses in 'corpus'. """
-    stats = {'sentence_count': corpus.get_sentences().sentence.count()}
-
-    tagged_tokens = corpus.get_tagged_tokens()
     tagged_tokens = tagged_tokens[tagged_tokens.tagged_sense]
     stats.update(count_total_and_unique(tagged_tokens, 'sense'))
-    stats.update(count_total_and_unique(tagged_tokens, 'token'))
+    tagged_stats = count_total_and_unique(tagged_tokens, 'token')
+    stats.update({
+        'total_tagged_token_count': tagged_stats['total_token_count'],
+        'unique_tagged_token_count': tagged_stats['unique_token_count']})
 
     sense_counts_per_token = count_unique_senses_per_token(tagged_tokens)
     stats.update(count_monosemous_and_polysemous_tokens(sense_counts_per_token))

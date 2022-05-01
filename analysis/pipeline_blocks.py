@@ -77,19 +77,6 @@ def get_word_vectors(corpus: CorpusHandler, model_cache: str,
     return word_vectors, id_map
 
 
-def calc_ari_for_all_senses(corpus: CorpusHandler,
-                            flat_dict_senses: pd.DataFrame) -> Dict:
-    """ Calculates the Adjusted Rand Index (ARI) for 'flat_dict_senses' and the
-    ground truth for the given corpus and writes it into a statistics dict.
-    Considers generated senses for tokens without any sense annotations. """
-    true_senses = ag.extract_int_senses_from_df(corpus.get_tagged_tokens())
-    dict_senses = ag.extract_int_senses_from_df(flat_dict_senses)
-    ari = adjusted_rand_score(true_senses, dict_senses)
-
-    logging.info(f"ARI (all senses): {ari}")
-    return {'ari_all': ari}
-
-
 def calc_ari_for_tagged_senses(corpus: CorpusHandler,
                                flat_dict_senses: pd.DataFrame) -> Dict:
     """ Calculates the Adjusted Rand Index (ARI) for 'flat_dict_senses' and the
