@@ -24,13 +24,13 @@ def load_and_preprocess_sentences(corpus: CorpusHandler) -> List[List[str]]:
     return sentences
 
 
-def add_sense_counts_to_id_map(corpus: CorpusHandler, id_map: pd.DataFrame) \
-        -> pd.DataFrame:
+def add_sense_counts_to_id_map(tagged_tokens: pd.DataFrame,
+                               id_map: pd.DataFrame) -> pd.DataFrame:
     """ Loads and lower cases tagged tokens from the specified corpus and adds
     the number of unique senses per token to 'id_map'. """
-    tagged_tokens = corpus.get_tagged_tokens()
     tagged_tokens['token'] = tagged_tokens.token.str.lower()
-    sense_counts = ag.count_unique_senses_per_token(tagged_tokens)
+    sense_counts = ag.count_unique_senses_per_token(
+        tagged_tokens[tagged_tokens.tagged_sense])
 
     logging.info("Loaded ground truth number of senses per token.")
     return ag.add_sense_counts_to_id_map(id_map, sense_counts)
@@ -77,27 +77,25 @@ def get_word_vectors(corpus: CorpusHandler, model_cache: str,
     return word_vectors, id_map
 
 
-def calc_ari_for_tagged_senses(corpus: CorpusHandler,
-                               flat_dict_senses: pd.DataFrame) -> Dict:
+def calc_ari(tagged_tokens: pd.DataFrame,
+             flat_dict_senses: pd.DataFrame) -> Dict:
     """ Calculates the Adjusted Rand Index (ARI) for 'flat_dict_senses' and the
     ground truth for the given corpus and writes it into a statistics dict.
     Only considers tokens with existing sense annotations. """
-    tagged_tokens = corpus.get_tagged_tokens()
-    true_senses = ag.extract_int_senses_from_df(tagged_tokens)
-    dict_senses = ag.extract_int_senses_from_df(flat_dict_senses)
-    ari = adjusted_rand_score(true_senses[tagged_tokens.tagged_sense.tolist()],
-                              dict_senses[tagged_tokens.tagged_sense.tolist()])
+    tag_mask = tagged_tokens.tagged_sense.tolist()
+    true_senses = ag.extract_int_senses_from_df(tagged_tokens[tag_mask])
+    dict_senses = ag.extract_int_senses_from_df(flat_dict_senses[tag_mask])
+    ari = adjusted_rand_score(true_senses, dict_senses)
 
-    logging.info(f"ARI (tagged senses): {ari}")
-    return {'ari_tagged': ari}
+    logging.info(f"ARI: {ari}")
+    return {'ari': ari}
 
 
-def calc_ari_per_token(corpus: CorpusHandler, dictionary: pd.DataFrame) \
+def calc_ari_per_token(tagged_tokens: pd.DataFrame, dictionary: pd.DataFrame) \
         -> pd.DataFrame:
     """ Adds a column with an Adjusted Rand Index (ARI) per token and senses to
-    'dictionary' based on the ground truth for the given corpus. Another column
+    'dictionary' based on the ground truth from 'tagged_tokens'. Another column
     indicates if all senses for one token are tagged. """
-    tagged_tokens = corpus.get_tagged_tokens()
     true_senses = np.array(ag.extract_int_senses_from_df(tagged_tokens))
 
     dictionary['ari'] = dictionary.apply(

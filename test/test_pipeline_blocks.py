@@ -28,13 +28,13 @@ class TestPipelineBlocks(TestCase):
         self.assertIn("Lower cased sentences and added special tokens.",
                       captured_logs.output[0])
 
-    @patch('data.corpus_handler.CorpusHandler')
-    def test_add_sense_counts_to_id_map(self, corpus):
-        """ Should count the unique senses per lower cased token from 'corpus'
-        and add the counts to id_map. """
-        corpus.get_tagged_tokens.return_value = pd.DataFrame({
+    def test_add_sense_counts_to_id_map(self):
+        """ Should count the unique senses per lower cased token from
+        'tagged_tokens' and add the counts to id_map. """
+        tagged_tokens = pd.DataFrame({
             'token': ['a', 'b', 'a', 'b', '.'],
-            'sense': ['a0', 'b0', 'a0', 'b1', '.0']})
+            'sense': ['a0', 'b0', 'a0', 'b1', '.0'],
+            'tagged_sense': [True, True, True, True, True]})
         id_map = pd.DataFrame({'token': ['a', 'b', '.'],
                                'word_vector_id': [[0, 2], [1, 3], [4]],
                                'reference_id': [[0, 0], [0, 0], [0]]})
@@ -45,7 +45,7 @@ class TestPipelineBlocks(TestCase):
                                  'total_token_count': [2, 2, 1]})
 
         with self.assertLogs(level="INFO") as captured_logs:
-            result = pb.add_sense_counts_to_id_map(corpus, id_map)
+            result = pb.add_sense_counts_to_id_map(tagged_tokens, id_map)
 
         pd.testing.assert_frame_equal(expected, result)
         self.assertEqual(len(captured_logs.records), 1)
@@ -81,29 +81,26 @@ class TestPipelineBlocks(TestCase):
         pd.testing.assert_frame_equal(pd.DataFrame({'a': [42]}), id_map)
         calculate_word_vectors.assert_called()
 
-    @patch('data.corpus_handler.CorpusHandler')
-    def test_calc_ari_for_tagged_senses(self, corpus):
+    def test_calc_ari_for_tagged_senses(self):
         """ Should calculate the ARI for a perfect clustering. Should only
         consider the tagged token and therefore a perfect score. """
-        corpus.get_tagged_tokens.return_value = pd.DataFrame({
-            'token': ['a', 'a'], 'sense': ['a0', 'a0'],
-            'tagged_sense': [True, False]})
+        tagged_tokens = pd.DataFrame({'token': ['a', 'a'],
+                                      'sense': ['a0', 'a0'],
+                                      'tagged_sense': [True, False]})
         flat_dict_senses = pd.DataFrame({
             'word_vector_id': [0, 1], 'sense': ['a0', 'a1']})
 
         with self.assertLogs(level="INFO") as logs:
-            stats = pb.calc_ari_for_tagged_senses(corpus, flat_dict_senses)
+            stats = pb.calc_ari(tagged_tokens, flat_dict_senses)
 
-        self.assertEqual({'ari_tagged': 1.0}, stats)
+        self.assertEqual({'ari': 1.0}, stats)
         self.assertEqual(len(logs.records), 1)
-        self.assertEqual(logs.records[0].getMessage(),
-                         "ARI (tagged senses): 1.0")
+        self.assertEqual(logs.records[0].getMessage(), "ARI: 1.0")
 
-    @patch('data.corpus_handler.CorpusHandler')
-    def test_calc_ari_per_token(self, corpus):
+    def test_calc_ari_per_token(self):
         """ Should add a column with one ARI per token and an indicator for
         tokens with completely tagged senses. """
-        corpus.get_tagged_tokens.return_value = pd.DataFrame({
+        tagged_tokens = pd.DataFrame({
             'token': ['a', 'b', 'a', 'b', '.'],
             'sense': ['a0', 'b0', 'a0', 'b1', '.0'],
             'tagged_sense': [True, True, True, False, False]})
@@ -118,5 +115,5 @@ class TestPipelineBlocks(TestCase):
             'ari': [0.0, 1.0, 1.0],
             'tagged_token': [True, False, False]})
 
-        result = pb.calc_ari_per_token(corpus, dictionary)
+        result = pb.calc_ari_per_token(tagged_tokens, dictionary)
         pd.testing.assert_frame_equal(expected, result)
