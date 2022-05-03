@@ -7,7 +7,10 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
+from analysis.affinity_name import AffinityName
+from analysis.linkage_name import LinkageName
 from data import file_handler as fh
+from data.corpus_name import CorpusName
 
 
 class TestFileHandler(TestCase):
@@ -55,36 +58,38 @@ class TestFileHandler(TestCase):
             self.assertFalse(fh.does_file_exist(tmp_dir_name, 'm.npz'))
 
     def test_gen_dictionary_file_name(self):
-        self.assertEqual('cor-linkage_single-dist_0.12345-dictionary.pkl',
-                         fh.gen_dictionary_file_name('cor', 'single', 0.12345))
+        self.assertEqual('ep-dictionary.pkl', fh.gen_dictionary_file_name('ep'))
 
-    def test_gen_dictionary_file_name_no_dist(self):
-        self.assertEqual('cor-linkage_single-no_dist-dictionary.pkl',
-                         fh.gen_dictionary_file_name_no_dist('cor', 'single'))
+    def test_gen_experiment_prefix(self):
+        self.assertEqual(
+            'toy-affinity_cosine-linkage_average-dist_0.12345',
+            fh.gen_experiment_prefix(CorpusName.TOY, AffinityName.COSINE,
+                                     LinkageName.AVERAGE, 0.12345))
+
+    def test_gen_experiment_prefix_no_dist(self):
+        self.assertEqual(
+            'toy-affinity_cosine-linkage_average-no_dist',
+            fh.gen_experiment_prefix_no_dist(
+                CorpusName.TOY, AffinityName.COSINE, LinkageName.AVERAGE))
 
     def test_gen_raw_id_map_file_name(self):
-        self.assertEqual('corpus_name-raw_id_map.pkl',
-                         fh.gen_raw_id_map_file_name('corpus_name'))
+        self.assertEqual('toy-raw_id_map.pkl',
+                         fh.gen_raw_id_map_file_name(CorpusName.TOY))
 
     def test_gen_sentences_file_name(self):
-        self.assertEqual('corpus_name-sentences.pkl',
-                         fh.gen_sentences_file_name('corpus_name'))
+        self.assertEqual('toy-sentences.pkl',
+                         fh.gen_sentences_file_name(CorpusName.TOY))
 
     def test_gen_stats_file_name(self):
-        self.assertEqual('cor-linkage_average-dist_0.12345-stats.json',
-                         fh.gen_stats_file_name('cor', 'average', 0.12345))
-
-    def test_gen_stats_file_name_no_dist(self):
-        self.assertEqual('cor-linkage_average-no_dist-stats.json',
-                         fh.gen_stats_file_name_no_dist('cor', 'average'))
+        self.assertEqual('ep-stats.json', fh.gen_stats_file_name('ep'))
 
     def test_gen_tagged_tokens_file_name(self):
-        self.assertEqual('corpus_name-tagged_tokens.pkl',
-                         fh.gen_tagged_tokens_file_name('corpus_name'))
+        self.assertEqual('toy-tagged_tokens.pkl',
+                         fh.gen_tagged_tokens_file_name(CorpusName.TOY))
 
     def test_gen_word_vec_file_name(self):
-        self.assertEqual('corpus_name-word_vectors.npz',
-                         fh.gen_word_vec_file_name('corpus_name'))
+        self.assertEqual('toy-word_vectors.npz',
+                         fh.gen_word_vec_file_name(CorpusName.TOY))
 
     def test_save_and_load_df(self):
         """ Should save a DataFrame into a pkl-file and load it afterwards. """

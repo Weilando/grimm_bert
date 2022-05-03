@@ -2,12 +2,9 @@ from enum import Enum
 from typing import List
 
 
-class LinkageName(str, Enum):
-    AVERAGE = "average"
-    COMPLETE = "complete"
-    SINGLE = "single"
-
-    # Ward Linkage requires Euclidean distances.
+class AffinityName(str, Enum):
+    COSINE = "cosine"
+    EUCLIDEAN = "euclidean"
 
     @classmethod
     def get_names(cls) -> List[str]:

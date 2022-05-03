@@ -15,10 +15,11 @@ class TestGrimmBert(TestCase):
         self.assertIsInstance(self.parser, ArgumentParser)
 
     def test_parse_short_options(self):
-        args = ['toy', 'average', '-r', 'R', '-l', 'L', '-m', 'M', '-c', 'C',
-                '-d', '.5']
+        args = ['toy', 'cosine', 'average', '-r', 'R', '-l', 'L', '-m', 'M',
+                '-c', 'C', '-d', '.5']
         parsed_args = self.parser.parse_args(args)
         self.assertEqual(parsed_args.corpus_name, 'toy')
+        self.assertEqual(parsed_args.affinity_name, 'cosine')
         self.assertEqual(parsed_args.linkage_name, 'average')
         self.assertEqual(parsed_args.corpus_cache, 'C')
         self.assertEqual(parsed_args.model_cache, 'M')
@@ -27,11 +28,12 @@ class TestGrimmBert(TestCase):
         self.assertEqual(parsed_args.log, 'L')
 
     def test_parse_long_options(self):
-        args = ['toy', 'complete', '--results_path', 'rp', '--log', 'INFO',
-                '--model_cache', 'md', '--corpus_cache', 'cd',
+        args = ['toy', 'euclidean', 'complete', '--results_path', 'rp',
+                '--log', 'INFO', '--model_cache', 'md', '--corpus_cache', 'cd',
                 '--max_dist', '0.5']
         parsed_args = self.parser.parse_args(args)
         self.assertEqual(parsed_args.corpus_name, 'toy')
+        self.assertEqual(parsed_args.affinity_name, 'euclidean')
         self.assertEqual(parsed_args.linkage_name, 'complete')
         self.assertEqual(parsed_args.corpus_cache, 'cd')
         self.assertEqual(parsed_args.model_cache, 'md')
@@ -40,9 +42,10 @@ class TestGrimmBert(TestCase):
         self.assertEqual(parsed_args.log, 'INFO')
 
     def test_parse_defaults(self):
-        args = ['toy', 'single']
+        args = ['toy', 'cosine', 'single']
         parsed_args = self.parser.parse_args(args)
         self.assertEqual(parsed_args.corpus_name, 'toy')
+        self.assertEqual(parsed_args.affinity_name, 'cosine')
         self.assertEqual(parsed_args.linkage_name, 'single')
         self.assertEqual(parsed_args.corpus_cache, gb.DEFAULT_CORPUS_CACHE_DIR)
         self.assertEqual(parsed_args.model_cache, gb.DEFAULT_MODEL_CACHE_DIR)
@@ -54,7 +57,7 @@ class TestGrimmBert(TestCase):
     def test_parse_no_max_dist(self, mock_stderr):
         """ Should raise an ArgumentError on empty max_dist argument. """
         with self.assertRaises(ArgumentError) and self.assertRaises(SystemExit):
-            self.parser.parse_args(['toy', 'complete', '--max_dist'])
+            self.parser.parse_args(['toy', 'cosine', 'complete', '--max_dist'])
         self.assertRegexpMatches(mock_stderr.getvalue(),
                                  r"expected one argument")
 

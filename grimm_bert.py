@@ -8,6 +8,7 @@ import analysis.aggregator as ag
 import analysis.clustering as cl
 import analysis.pipeline_blocks as pb
 import data.file_handler as fh
+from analysis.affinity_name import AffinityName
 from analysis.linkage_name import LinkageName
 from data.corpus_handler import CorpusName, CorpusHandler
 
@@ -30,6 +31,9 @@ def build_argument_parser() -> ArgumentParser:
     p.add_argument('corpus_name', type=str, default=None,
                    choices=CorpusName.get_names(),
                    help="name of the base corpus for the dictionary")
+    p.add_argument('affinity_name', type=str, default=None,
+                   choices=AffinityName.get_names(),
+                   help="name of the linkage criterion for clustering")
     p.add_argument('linkage_name', type=str, default=None,
                    choices=LinkageName.get_names(),
                    help="name of the linkage criterion for clustering")
@@ -58,12 +62,13 @@ def is_max_dist_defined(max_dist: Union[float, None]) -> bool:
 
 def create_dictionary(
         corpus: CorpusHandler, model_cache: str, results_path: str,
-        linkage_name: LinkageName, max_dist: float) -> None:
+        affinity_name: AffinityName, linkage_name: LinkageName,
+        max_dist: float) -> None:
     """ Creates a dictionary from the given corpus with word vectors from
-    CharacterBERT and hierarchical clustering with the specified linkage
-    criterion and maximum distance. """
-    stats = {'corpus_name': corpus.corpus_name, 'linkage_name': linkage_name,
-             'max_dist': max_dist}
+    CharacterBERT and hierarchical clustering with the specified affinity
+    metric, linkage criterion and maximum distance. """
+    stats = {'corpus_name': corpus.corpus_name, 'affinity_name': affinity_name,
+             'linkage_name': linkage_name, 'max_dist': max_dist}
 
     abs_results_path = fh.add_and_get_abs_path(results_path)
     word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,
@@ -72,30 +77,32 @@ def create_dictionary(
     stats.update(ag.count_total_and_unique(id_map, 'token'))
     id_map = ag.collect_references_and_word_vectors(id_map, 'token')
 
-    dictionary = cl.cluster_vectors_per_token(word_vectors, id_map,
-                                              linkage_name, max_dist)
+    dictionary = cl.cluster_vectors_per_token(
+        word_vectors, id_map, affinity_name, linkage_name, max_dist)
     logging.info(f"Generated dictionary.")
+    experiment_prefix = fh.gen_experiment_prefix(corpus.corpus_name,
+                                                 affinity_name,
+                                                 linkage_name, max_dist)
     fh.save_df(abs_results_path,
-               fh.gen_dictionary_file_name(corpus.corpus_name, linkage_name,
-                                           max_dist),
+               fh.gen_dictionary_file_name(experiment_prefix),
                dictionary)
 
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
     stats.update(pb.calc_ari(corpus.get_tagged_tokens(), dict_senses))
     fh.save_stats(abs_results_path,
-                  fh.gen_stats_file_name(corpus.corpus_name, linkage_name,
-                                         max_dist),
+                  fh.gen_stats_file_name(experiment_prefix),
                   stats)
 
 
 def create_dictionary_with_known_sense_counts(
         corpus: CorpusHandler, model_cache: str, results_path: str,
-        linkage_name: LinkageName) -> None:
+        affinity_name: AffinityName, linkage_name: LinkageName) -> None:
     """ Creates a dictionary from the given corpus with word vectors from
-    CharacterBERT and hierarchical clustering with the specified linkage
-    criterion and the true number of unique senses per token. """
-    stats = {'corpus_name': corpus.corpus_name, 'linkage_name': linkage_name}
+    CharacterBERT and hierarchical clustering with the specified affinity
+    metric, linkage criterion and the true unique sense count per token. """
+    stats = {'corpus_name': corpus.corpus_name, 'affinity_name': affinity_name,
+             'linkage_name': linkage_name}
 
     abs_results_path = fh.add_and_get_abs_path(results_path)
     word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,
@@ -109,19 +116,20 @@ def create_dictionary_with_known_sense_counts(
     id_map = pb.add_sense_counts_to_id_map(tagged_tokens, id_map)
 
     dictionary = cl.cluster_vectors_per_token_with_known_sense_count(
-        word_vectors, id_map, linkage_name)
+        word_vectors, id_map, affinity_name, linkage_name)
     logging.info(f"Generated dictionary.")
+    experiment_prefix = fh.gen_experiment_prefix_no_dist(corpus.corpus_name,
+                                                         affinity_name,
+                                                         linkage_name)
     fh.save_df(abs_results_path,
-               fh.gen_dictionary_file_name_no_dist(corpus.corpus_name,
-                                                   linkage_name),
+               fh.gen_dictionary_file_name(experiment_prefix),
                dictionary)
 
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
     stats.update(pb.calc_ari(tagged_tokens, dict_senses))
     fh.save_stats(abs_results_path,
-                  fh.gen_stats_file_name_no_dist(corpus.corpus_name,
-                                                 linkage_name),
+                  fh.gen_stats_file_name(experiment_prefix),
                   stats)
 
 
@@ -135,10 +143,11 @@ if __name__ == '__main__':
 
     if is_max_dist_defined(args.max_dist):
         create_dictionary(
-            corpus=corpus_handler,
-            model_cache=args.model_cache, results_path=args.results_path,
+            corpus=corpus_handler, model_cache=args.model_cache,
+            results_path=args.results_path, affinity_name=args.affinity_name,
             linkage_name=args.linkage_name, max_dist=args.max_dist)
     else:
         create_dictionary_with_known_sense_counts(
             corpus=corpus_handler, model_cache=args.model_cache,
-            results_path=args.results_path, linkage_name=args.linkage_name)
+            results_path=args.results_path, affinity_name=args.affinity_name,
+            linkage_name=args.linkage_name)
