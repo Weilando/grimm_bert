@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 
 import pandas as pd
 
-from data import wsdeval_preprocessor as wp
+import data.wsdeval_preprocessor as wp
 
 TOY_XML_CORPUS = \
     """<?xml version="1.0" encoding="UTF-8" ?>

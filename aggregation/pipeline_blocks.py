@@ -4,12 +4,13 @@ from typing import List, Dict, Tuple
 
 import numpy as np
 import pandas as pd
-from model.character_cnn_utils import CharacterIndexer
+from model.character_bert.character_cnn_utils import CharacterIndexer
 from sklearn.metrics import adjusted_rand_score
 
-import analysis.aggregator as ag
-import analysis.bert_tools as bt
+import aggregation.aggregator as ag
 import data.file_handler as fh
+import data.file_name_generator as fg
+import model.model_tools as mt
 from data.corpus_handler import CorpusHandler
 
 
@@ -17,8 +18,8 @@ def load_and_preprocess_sentences(corpus: CorpusHandler) -> List[List[str]]:
     """ Loads raw sentences from the specified corpus, lower cases all tokens
     and adds special tokens to each sentence. """
     sentences = corpus.get_sentences_as_list()
-    sentences = bt.lower_sentences(sentences)
-    sentences = bt.add_special_tokens_to_each(sentences)
+    sentences = mt.lower_sentences(sentences)
+    sentences = mt.add_special_tokens_to_each(sentences)
 
     logging.info("Lower cased sentences and added special tokens.")
     return sentences
@@ -48,9 +49,9 @@ def calculate_word_vectors(corpus: CorpusHandler, model_cache: str) \
         -> Tuple[np.ndarray, pd.DataFrame]:
     """ Calculates word vectors with CharacterBERT and generates an id_map. """
     indexer = CharacterIndexer()
-    model = bt.get_character_bert_from_cache(model_cache)
+    model = mt.get_character_bert_from_cache(model_cache)
     sentences = load_and_preprocess_sentences(corpus)
-    word_vectors, raw_id_map = bt.embed_sentences(sentences, indexer, model)
+    word_vectors, raw_id_map = mt.embed_sentences(sentences, indexer, model)
 
     return word_vectors, raw_id_map
 
@@ -60,8 +61,8 @@ def get_word_vectors(corpus: CorpusHandler, model_cache: str,
         -> Tuple[np.ndarray, pd.DataFrame]:
     """ Loads the word vectors and corresponding raw id_map from an existing
     result file or calculates them from scratch and creates a cache. """
-    word_vec_file_name = fh.gen_word_vec_file_name(corpus.corpus_name)
-    raw_id_map_file_name = fh.gen_raw_id_map_file_name(corpus.corpus_name)
+    word_vec_file_name = fg.gen_word_vec_file_name(corpus.corpus_name)
+    raw_id_map_file_name = fg.gen_raw_id_map_file_name(corpus.corpus_name)
 
     if does_word_vector_cache_exist(abs_results_path, word_vec_file_name,
                                     raw_id_map_file_name):
@@ -99,11 +100,11 @@ def calc_ari_per_token(tagged_tokens: pd.DataFrame, dictionary: pd.DataFrame) \
     true_senses = np.array(ag.extract_int_senses_from_df(tagged_tokens))
 
     dictionary['ari'] = dictionary.apply(
-        lambda r: adjusted_rand_score(true_senses[r.word_vector_id],
+        lambda r: adjusted_rand_score(true_senses[r.token_id],
                                       ag.extract_int_senses_from_list(r.sense)),
         axis=1)
     dictionary['tagged_token'] = dictionary.apply(
-        lambda r: all(tagged_tokens.tagged_sense[r.word_vector_id]),
+        lambda r: all(tagged_tokens.tagged_sense[r.token_id]),
         axis=1)
 
     return dictionary

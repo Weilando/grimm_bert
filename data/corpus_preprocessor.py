@@ -1,7 +1,9 @@
-import pandas as pd
+from pandas import DataFrame
 
-from data import file_handler as fh
 from data.corpus_handler import CorpusName
+from data.file_handler import add_and_get_abs_path, save_df
+from data.file_name_generator import gen_sentences_file_name, \
+    gen_tagged_tokens_file_name
 
 STD_SENSE = '_SENSE'
 
@@ -9,14 +11,14 @@ STD_SENSE = '_SENSE'
 class CorpusPreprocessor(object):
     def __init__(self, corpus_name: CorpusName, corpus_cache_path: str):
         self.corpus_name = corpus_name
-        self.corpus_cache_path = fh.add_and_get_abs_path(corpus_cache_path)
+        self.corpus_cache_path = add_and_get_abs_path(corpus_cache_path)
 
-    def get_sentences(self) -> pd.DataFrame:
+    def get_sentences(self) -> DataFrame:
         """ Returns a DataFrame with a column 'sentence', where each sentence is
         a list of tokens. """
         pass
 
-    def get_tagged_tokens(self) -> pd.DataFrame:
+    def get_tagged_tokens(self) -> DataFrame:
         """ Returns a DataFrame with the columns 'token' and 'sense'. """
         pass
 
@@ -31,8 +33,8 @@ class CorpusPreprocessor(object):
         assert 'sense' in tagged_tokens.columns
         assert 'tagged_sense' in tagged_tokens.columns
 
-        fh.save_df(self.corpus_cache_path,
-                   fh.gen_sentences_file_name(self.corpus_name), sentences)
-        fh.save_df(self.corpus_cache_path,
-                   fh.gen_tagged_tokens_file_name(self.corpus_name),
-                   tagged_tokens)
+        save_df(self.corpus_cache_path,
+                gen_sentences_file_name(self.corpus_name), sentences)
+        save_df(self.corpus_cache_path,
+                gen_tagged_tokens_file_name(self.corpus_name),
+                tagged_tokens)

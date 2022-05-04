@@ -3,9 +3,9 @@ from unittest import main, TestCase
 import numpy as np
 import pandas as pd
 
-from analysis import clustering as cl
-from analysis.affinity_name import AffinityName
-from analysis.linkage_name import LinkageName
+import clustering.hierarchical_clustering as hc
+from clustering.affinity_name import AffinityName
+from clustering.linkage_name import LinkageName
 
 
 class TestNameDicts(TestCase):
@@ -22,7 +22,7 @@ class TestClustering(TestCase):
         """ Should assign one word vector to one cluster. """
         word_vectors = np.array([[.9, .0]])
         cluster_exp = np.array(['t_0'])
-        cluster = cl.get_clusters_for_token(word_vectors, 't',
+        cluster = hc.get_clusters_for_token(word_vectors, 't',
                                             AffinityName.COSINE,
                                             LinkageName.SINGLE, .5)
         np.testing.assert_array_equal(cluster_exp, cluster)
@@ -32,7 +32,7 @@ class TestClustering(TestCase):
         cosine distance to the other vectors is high. """
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
         cluster_exp = np.array(['t_0', 't_0', 't_1'])
-        cluster = cl.get_clusters_for_token(word_vectors, 't',
+        cluster = hc.get_clusters_for_token(word_vectors, 't',
                                             AffinityName.COSINE,
                                             LinkageName.SINGLE, .5)
         np.testing.assert_array_equal(cluster_exp, cluster)
@@ -42,7 +42,7 @@ class TestClustering(TestCase):
         single cluster, as its cosine distance to the other vectors is high. """
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
         cluster_exp = np.array(['t_0', 't_0', 't_1'])
-        cluster = cl.get_n_clusters_for_token(word_vectors, 't',
+        cluster = hc.get_n_clusters_for_token(word_vectors, 't',
                                               AffinityName.COSINE,
                                               LinkageName.SINGLE, 2)
         np.testing.assert_array_equal(cluster_exp, cluster)
@@ -52,7 +52,7 @@ class TestClustering(TestCase):
         own cluster. """
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
         cluster_exp = np.array(['t_2', 't_1', 't_0'])
-        cluster = cl.get_n_clusters_for_token(word_vectors, 't',
+        cluster = hc.get_n_clusters_for_token(word_vectors, 't',
                                               AffinityName.COSINE,
                                               LinkageName.SINGLE, 3)
         np.testing.assert_array_equal(cluster_exp, cluster)
@@ -61,15 +61,15 @@ class TestClustering(TestCase):
         """ Should assign the correct clusters per token. """
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, .5], [.8, .1]])
         id_map_red = pd.DataFrame({'token': ['a', 'b'],
-                                   'reference_id': [[0], [0, 0, 1]],
-                                   'word_vector_id': [[1], [0, 2, 3]]})
+                                   'sentence_id': [[0], [0, 0, 1]],
+                                   'token_id': [[1], [0, 2, 3]]})
         dictionary_exp = pd.DataFrame({'token': ['a', 'b'],
-                                       'reference_id': [[0], [0, 0, 1]],
-                                       'word_vector_id': [[1], [0, 2, 3]],
+                                       'sentence_id': [[0], [0, 0, 1]],
+                                       'token_id': [[1], [0, 2, 3]],
                                        'sense': [['a_0'], ['b_0', 'b_1', 'b_0']]
                                        })
 
-        dictionary_res = cl.cluster_vectors_per_token(word_vectors, id_map_red,
+        dictionary_res = hc.cluster_vectors_per_token(word_vectors, id_map_red,
                                                       AffinityName.COSINE,
                                                       LinkageName.SINGLE, 0.5)
         pd.testing.assert_frame_equal(dictionary_exp, dictionary_res)
@@ -78,17 +78,17 @@ class TestClustering(TestCase):
         """ Should assign the correct clusters per token. """
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, .5], [.8, .1]])
         id_map_red = pd.DataFrame({'token': ['a', 'b'],
-                                   'reference_id': [[0], [0, 0, 1]],
-                                   'word_vector_id': [[1], [0, 2, 3]],
+                                   'sentence_id': [[0], [0, 0, 1]],
+                                   'token_id': [[1], [0, 2, 3]],
                                    'unique_sense_count': [1, 2]})
         dictionary_exp = pd.DataFrame({'token': ['a', 'b'],
-                                       'reference_id': [[0], [0, 0, 1]],
-                                       'word_vector_id': [[1], [0, 2, 3]],
+                                       'sentence_id': [[0], [0, 0, 1]],
+                                       'token_id': [[1], [0, 2, 3]],
                                        'unique_sense_count': [1, 2],
                                        'sense': [['a_0'], ['b_0', 'b_1', 'b_0']]
                                        })
 
-        dictionary_res = cl.cluster_vectors_per_token_with_known_sense_count(
+        dictionary_res = hc.cluster_vectors_per_token_with_known_sense_count(
             word_vectors, id_map_red, AffinityName.COSINE, LinkageName.SINGLE)
         pd.testing.assert_frame_equal(dictionary_exp, dictionary_res)
 

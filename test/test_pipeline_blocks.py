@@ -5,7 +5,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
-from analysis import pipeline_blocks as pb
+import aggregation.pipeline_blocks as pb
 from data.corpus_handler import CorpusHandler
 from data.corpus_name import CorpusName
 
@@ -36,11 +36,11 @@ class TestPipelineBlocks(TestCase):
             'sense': ['a0', 'b0', 'a0', 'b1', '.0'],
             'tagged_sense': [True, True, True, True, True]})
         id_map = pd.DataFrame({'token': ['a', 'b', '.'],
-                               'word_vector_id': [[0, 2], [1, 3], [4]],
-                               'reference_id': [[0, 0], [0, 0], [0]]})
+                               'token_id': [[0, 2], [1, 3], [4]],
+                               'sentence_id': [[0, 0], [0, 0], [0]]})
         expected = pd.DataFrame({'token': ['a', 'b', '.'],
-                                 'word_vector_id': [[0, 2], [1, 3], [4]],
-                                 'reference_id': [[0, 0], [0, 0], [0]],
+                                 'token_id': [[0, 2], [1, 3], [4]],
+                                 'sentence_id': [[0, 0], [0, 0], [0]],
                                  'unique_sense_count': [1, 2, 1],
                                  'total_token_count': [2, 2, 1]})
 
@@ -68,7 +68,7 @@ class TestPipelineBlocks(TestCase):
             '/path', 'word_vec_file', 'raw_id_map_file'))
         does_file_exist.assert_called()
 
-    @patch('analysis.pipeline_blocks.calculate_word_vectors',
+    @patch('aggregation.pipeline_blocks.calculate_word_vectors',
            return_value=(np.ones(3), pd.DataFrame({'a': [42]})))
     def test_get_word_vectors_calculate(self, calculate_word_vectors):
         """ Should calculate the word vectors and id_map from scratch, as no
@@ -88,7 +88,7 @@ class TestPipelineBlocks(TestCase):
                                       'sense': ['a0', 'a0'],
                                       'tagged_sense': [True, False]})
         flat_dict_senses = pd.DataFrame({
-            'word_vector_id': [0, 1], 'sense': ['a0', 'a1']})
+            'token_id': [0, 1], 'sense': ['a0', 'a1']})
 
         with self.assertLogs(level="INFO") as logs:
             stats = pb.calc_ari(tagged_tokens, flat_dict_senses)
@@ -106,11 +106,11 @@ class TestPipelineBlocks(TestCase):
             'tagged_sense': [True, True, True, False, False]})
         dictionary = pd.DataFrame({
             'token': ['a', 'b', '.'],
-            'word_vector_id': [[0, 2], [1, 3], [4]],
+            'token_id': [[0, 2], [1, 3], [4]],
             'sense': [['a0', 'a1'], ['b0', 'b1'], ['.0']]})
         expected = pd.DataFrame({
             'token': ['a', 'b', '.'],
-            'word_vector_id': [[0, 2], [1, 3], [4]],
+            'token_id': [[0, 2], [1, 3], [4]],
             'sense': [['a0', 'a1'], ['b0', 'b1'], ['.0']],
             'ari': [0.0, 1.0, 1.0],
             'tagged_token': [True, False, False]})

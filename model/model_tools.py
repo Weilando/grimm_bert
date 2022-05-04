@@ -4,10 +4,10 @@ from typing import List, Tuple, Union
 import numpy as np
 import pandas as pd
 import torch
-from model.character_bert import CharacterBertModel
-from model.character_cnn_utils import CharacterIndexer
+from model.character_bert.character_bert import CharacterBertModel
+from model.character_bert.character_cnn_utils import CharacterIndexer
 
-from analysis import aggregator as ag
+import aggregation.aggregator as ag
 
 
 def gen_model_cache_location(cache_directory: str, model_name: str) -> str:
@@ -44,7 +44,7 @@ def calc_word_vectors(encoded_sentence: torch.Tensor,
         return model(encoded_sentence)[0]
 
 
-def concat_word_vectors(word_vectors: List[torch.Tensor]) -> torch.tensor:
+def concat_word_vectors(word_vectors: List[torch.Tensor]) -> torch.Tensor:
     """ Concatenates word-vectors into a matrix. Each row is a word-vector. """
     assert all(len(v.shape) > 1 for v in word_vectors)
 
@@ -82,6 +82,6 @@ def embed_sentences(tokenized_sentences: List[List[str]],
     word_vectors = strip_each(word_vectors)
 
     word_vectors = concat_word_vectors(word_vectors)
-    id_map = ag.gen_ids_for_vectors_and_references(tokenized_sentences)
+    id_map = ag.gen_ids_for_sentences_and_tokens(tokenized_sentences)
 
     return word_vectors.numpy(), id_map

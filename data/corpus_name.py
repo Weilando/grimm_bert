@@ -3,13 +3,13 @@ from typing import List
 
 
 class CorpusName(str, Enum):
-    TOY = 'toy'
     SEMCOR = 'semcor'
     SEMEVAL07 = "semeval2007"
     SEMEVAL13 = "semeval2013"
     SEMEVAL15 = "semeval2015"
     SENSEVAL2 = "senseval2"
     SENSEVAL3 = "senseval3"
+    TOY = 'toy'
 
     @classmethod
     def get_names(cls) -> List[str]:

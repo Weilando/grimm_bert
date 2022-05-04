@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
 
-from analysis.affinity_name import AffinityName
-from analysis.linkage_name import LinkageName
+from clustering.affinity_name import AffinityName
+from clustering.linkage_name import LinkageName
 
 
 def get_clusters_for_token(word_vectors: np.ndarray, token: str,
@@ -50,7 +50,7 @@ def cluster_vectors_per_token(word_vectors: np.ndarray,
     'affinity' metric and 'linkage' criterion. Adds unique sense labels. Splits
     the dendrogram based on 'max_distance'. """
     id_map_reduced['sense'] = id_map_reduced.apply(
-        lambda r: get_clusters_for_token(word_vectors[r.word_vector_id],
+        lambda r: get_clusters_for_token(word_vectors[r.token_id],
                                          r.token, affinity, linkage,
                                          max_distance),
         axis=1)
@@ -66,7 +66,7 @@ def cluster_vectors_per_token_with_known_sense_count(
     unique sense labels. Requires the column 'unique_sense_count' in
     'id_map_reduced' with the number of clusters to find. """
     id_map_reduced['sense'] = id_map_reduced.apply(
-        lambda r: get_n_clusters_for_token(word_vectors[r.word_vector_id],
+        lambda r: get_n_clusters_for_token(word_vectors[r.token_id],
                                            r.token, affinity, linkage,
                                            r.unique_sense_count),
         axis=1)

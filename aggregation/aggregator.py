@@ -6,54 +6,53 @@ import pandas as pd
 from data.corpus_handler import CorpusHandler
 
 
-def collect_references_and_word_vectors(
+def pack_sentence_ids_and_token_ids(
         df: pd.DataFrame, by: Union[str, List[str]]) -> pd.DataFrame:
-    """ Collects lists of reference-ids and word-vector-ids per token. """
+    """ Collects lists of sentence_ids and token_ids per unique token. """
     return df.groupby(by=by) \
-        .agg({'reference_id': list, 'word_vector_id': list}) \
+        .agg({'sentence_id': list, 'token_id': list}) \
         .reset_index()
 
 
-def unpack_per_word_vector(df: pd.DataFrame, to_unpack: List[str]) \
-        -> pd.DataFrame:
-    """ Unpacks lists in the columns (e.g., 'reference_id' and 'word_vector_id')
-    and sorts all rows by the word_vector_ids. """
+def unpack_and_sort_per_token_id(
+        df: pd.DataFrame, to_unpack: List[str]) -> pd.DataFrame:
+    """ Unpacks lists in the columns (e.g., 'sentence_id' and 'token_id') and
+    sorts all rows by the token_ids. """
     return df.explode(to_unpack) \
         .infer_objects() \
-        .sort_values('word_vector_id') \
+        .sort_values('token_id') \
         .reset_index(drop=True)
 
 
-def gen_ids_for_vectors_and_references(tokenized_sentences: List[List[str]]) \
+def gen_ids_for_sentences_and_tokens(tokenized_sentences: List[List[str]]) \
         -> pd.DataFrame:
-    """ Generates ids for references and word vectors per token. """
+    """ Generates ids for sentences and tokens. """
     tokens = np.concatenate(tokenized_sentences, axis=0)
-    word_vector_ids = range(len(tokens))
-    ref_ids = np.concatenate(
+    token_ids = range(len(tokens))
+    sentence_ids = np.concatenate(
         [np.full_like(t, i, int) for i, t in enumerate(tokenized_sentences)],
         axis=0)
 
-    return pd.DataFrame({'token': tokens, 'reference_id': ref_ids,
-                         'word_vector_id': word_vector_ids})
+    return pd.DataFrame({'token': tokens, 'sentence_id': sentence_ids,
+                         'token_id': token_ids})
 
 
 def extract_flat_senses(dictionary: pd.DataFrame) -> pd.DataFrame:
-    """ Extracts senses per and sorts by word_vector_id from 'dictionary'. Drops
+    """ Extracts senses per and sorts by token_id from 'dictionary'. Drops
     other columns. """
-    return unpack_per_word_vector(dictionary[['word_vector_id', 'sense']],
-                                  ['word_vector_id', 'sense']) \
-        .set_index('word_vector_id')
+    return unpack_and_sort_per_token_id(dictionary[['token_id', 'sense']],
+                                        ['token_id', 'sense']) \
+        .set_index('token_id')
 
 
 def extract_int_senses_from_df(df: pd.DataFrame) -> np.ndarray:
     """ Enumerates unique senses and returns a list of those sense ids.
-    Flattens and sorts word_vector_ids and senses if they are lists. """
+    Flattens and sorts token_ids and senses if they are lists. """
     return df.sense.factorize()[0]
 
 
 def extract_int_senses_from_list(senses: List) -> np.ndarray:
     """ Enumerates unique senses and returns a list of those sense ids. """
-    # noinspection PyTypeChecker
     return pd.factorize(senses)[0]
 
 

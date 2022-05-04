@@ -4,12 +4,13 @@ import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import Union
 
-import analysis.aggregator as ag
-import analysis.clustering as cl
-import analysis.pipeline_blocks as pb
+import aggregation.aggregator as ag
+import aggregation.pipeline_blocks as pb
+import clustering.hierarchical_clustering as hc
 import data.file_handler as fh
-from analysis.affinity_name import AffinityName
-from analysis.linkage_name import LinkageName
+import data.file_name_generator as fg
+from clustering.affinity_name import AffinityName
+from clustering.linkage_name import LinkageName
 from data.corpus_handler import CorpusName, CorpusHandler
 
 current_path = os.path.dirname(os.path.abspath(__file__))
@@ -75,23 +76,23 @@ def create_dictionary(
                                                abs_results_path)
 
     stats.update(ag.count_total_and_unique(id_map, 'token'))
-    id_map = ag.collect_references_and_word_vectors(id_map, 'token')
+    id_map = ag.pack_sentence_ids_and_token_ids(id_map, 'token')
 
-    dictionary = cl.cluster_vectors_per_token(
+    dictionary = hc.cluster_vectors_per_token(
         word_vectors, id_map, affinity_name, linkage_name, max_dist)
     logging.info(f"Generated dictionary.")
-    experiment_prefix = fh.gen_experiment_prefix(corpus.corpus_name,
+    experiment_prefix = fg.gen_experiment_prefix(corpus.corpus_name,
                                                  affinity_name,
                                                  linkage_name, max_dist)
     fh.save_df(abs_results_path,
-               fh.gen_dictionary_file_name(experiment_prefix),
+               fg.gen_dictionary_file_name(experiment_prefix),
                dictionary)
 
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
     stats.update(pb.calc_ari(corpus.get_tagged_tokens(), dict_senses))
     fh.save_stats(abs_results_path,
-                  fh.gen_stats_file_name(experiment_prefix),
+                  fg.gen_stats_file_name(experiment_prefix),
                   stats)
 
 
@@ -112,24 +113,24 @@ def create_dictionary_with_known_sense_counts(
     id_map = id_map[tagged_tokens.tagged_sense]
     tagged_tokens = tagged_tokens[tagged_tokens.tagged_sense]
     stats.update(ag.count_total_and_unique(id_map, 'token'))
-    id_map = ag.collect_references_and_word_vectors(id_map, 'token')
+    id_map = ag.pack_sentence_ids_and_token_ids(id_map, 'token')
     id_map = pb.add_sense_counts_to_id_map(tagged_tokens, id_map)
 
-    dictionary = cl.cluster_vectors_per_token_with_known_sense_count(
+    dictionary = hc.cluster_vectors_per_token_with_known_sense_count(
         word_vectors, id_map, affinity_name, linkage_name)
     logging.info(f"Generated dictionary.")
-    experiment_prefix = fh.gen_experiment_prefix_no_dist(corpus.corpus_name,
+    experiment_prefix = fg.gen_experiment_prefix_no_dist(corpus.corpus_name,
                                                          affinity_name,
                                                          linkage_name)
     fh.save_df(abs_results_path,
-               fh.gen_dictionary_file_name(experiment_prefix),
+               fg.gen_dictionary_file_name(experiment_prefix),
                dictionary)
 
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
     stats.update(pb.calc_ari(tagged_tokens, dict_senses))
     fh.save_stats(abs_results_path,
-                  fh.gen_stats_file_name(experiment_prefix),
+                  fg.gen_stats_file_name(experiment_prefix),
                   stats)
 
 

@@ -10,13 +10,13 @@ to [create a conda environment](https://docs.conda.io/projects/conda/en/latest/u
 with all necessary python packages.
 
 Use the corresponding pre-processor to generate suitable input files for the pipeline.
-The input files from wsdeval need to be in [data/wsdeval_corpora](data/wsdeval_corpora).
+The input files from WSDEval need to be in [data/wsdeval_corpora](data/wsdeval_corpora).
 
 | Corpus  | Description                                                | Pre-Processor                                             |
 |---------|------------------------------------------------------------|-----------------------------------------------------------|
 | toy     | Simple corpus for small tests.                             | [data.ToyPreprocessor](/data/toy_preprocessor.py)         |
-| wsdeval | Evaluation corpora from semeval2007/13/15 and senseval2/3. | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) |
-| semcor  | Semantic concordance with more than 800k tokens.           | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) |
+| WSDEval | Evaluation corpora from semeval2007/13/15 and senseval2/3. | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) |
+| SemCor  | Semantic concordance with more than 800k tokens.           | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) |
 
 To add a new corpus, create a subclass of [/data/CorpusPreprocessor](/data/corpus_preprocessor.py).
 You might want to apply an uncased tokenizer, e.g., `BertTokenizer.basic_tokenizer`.
