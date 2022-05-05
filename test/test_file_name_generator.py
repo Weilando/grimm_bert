@@ -1,8 +1,8 @@
 from unittest import main, TestCase
 
 import data.file_name_generator as fg
-from clustering.affinity_name import AffinityName
 from clustering.linkage_name import LinkageName
+from clustering.metric_name import MetricName
 from data.corpus_name import CorpusName
 
 
@@ -13,14 +13,14 @@ class TestFileName(TestCase):
     def test_gen_experiment_prefix(self):
         self.assertEqual(
             'toy-affinity_cosine-linkage_average-dist_0.12345',
-            fg.gen_experiment_prefix(CorpusName.TOY, AffinityName.COSINE,
+            fg.gen_experiment_prefix(CorpusName.TOY, MetricName.COSINE,
                                      LinkageName.AVERAGE, 0.12345))
 
     def test_gen_experiment_prefix_no_dist(self):
         self.assertEqual(
             'toy-affinity_cosine-linkage_average-no_dist',
             fg.gen_experiment_prefix_no_dist(
-                CorpusName.TOY, AffinityName.COSINE, LinkageName.AVERAGE))
+                CorpusName.TOY, MetricName.COSINE, LinkageName.AVERAGE))
 
     def test_gen_raw_id_map_file_name(self):
         self.assertEqual('toy-raw_id_map.pkl',

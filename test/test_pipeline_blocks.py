@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 import aggregation.pipeline_blocks as pb
+from clustering.metric_name import MetricName
 from data.corpus_handler import CorpusHandler
 from data.corpus_name import CorpusName
 
@@ -117,3 +118,21 @@ class TestPipelineBlocks(TestCase):
 
         result = pb.calc_ari_per_token(tagged_tokens, dictionary)
         pd.testing.assert_frame_equal(expected, result)
+
+    def test_calc_silhouette_score_per_token(self):
+        """ Should add a column with one Silhouette Coefficient per token and
+        NaN if too few or many labels are given to calculate the score. """
+        word_vecs = np.array([[5, 2], [9, 0], [5, 3], [1, 0], [0, 1], [7, 1]])
+        dictionary = pd.DataFrame({
+            'token': ['a', 'b', '.'],
+            'token_id': [[0, 2], [1, 3, 4], [5]],
+            'sense': [['a0', 'a1'], ['b0', 'b1', 'b1'], ['.0']]})
+        expected = pd.DataFrame({
+            'token': ['a', 'b', '.'],
+            'token_id': [[0, 2], [1, 3, 4], [5]],
+            'sense': [['a0', 'a1'], ['b0', 'b1', 'b1'], ['.0']],
+            'silhouette_score': [np.NaN, 0.5557, np.NaN]})
+
+        result = pb.calc_silhouette_score_per_token(word_vecs, dictionary,
+                                                    MetricName.EUCLIDEAN)
+        pd.testing.assert_frame_equal(expected, result, atol=1e-4)

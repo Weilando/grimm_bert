@@ -4,13 +4,13 @@ import numpy as np
 import pandas as pd
 
 import clustering.hierarchical_clustering as hc
-from clustering.affinity_name import AffinityName
 from clustering.linkage_name import LinkageName
+from clustering.metric_name import MetricName
 
 
 class TestNameDicts(TestCase):
-    def test_get_affinity_names(self):
-        self.assertEqual(['cosine', 'euclidean'], AffinityName.get_names())
+    def test_get_metric_names(self):
+        self.assertEqual(['cosine', 'euclidean'], MetricName.get_names())
 
     def test_get_linkage_names(self):
         self.assertEqual(['average', 'complete', 'single'],
@@ -23,7 +23,7 @@ class TestClustering(TestCase):
         word_vectors = np.array([[.9, .0]])
         cluster_exp = np.array(['t_0'])
         cluster = hc.get_clusters_for_token(word_vectors, 't',
-                                            AffinityName.COSINE,
+                                            MetricName.COSINE,
                                             LinkageName.SINGLE, .5)
         np.testing.assert_array_equal(cluster_exp, cluster)
 
@@ -33,7 +33,7 @@ class TestClustering(TestCase):
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
         cluster_exp = np.array(['t_0', 't_0', 't_1'])
         cluster = hc.get_clusters_for_token(word_vectors, 't',
-                                            AffinityName.COSINE,
+                                            MetricName.COSINE,
                                             LinkageName.SINGLE, .5)
         np.testing.assert_array_equal(cluster_exp, cluster)
 
@@ -43,7 +43,7 @@ class TestClustering(TestCase):
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
         cluster_exp = np.array(['t_0', 't_0', 't_1'])
         cluster = hc.get_n_clusters_for_token(word_vectors, 't',
-                                              AffinityName.COSINE,
+                                              MetricName.COSINE,
                                               LinkageName.SINGLE, 2)
         np.testing.assert_array_equal(cluster_exp, cluster)
 
@@ -53,7 +53,7 @@ class TestClustering(TestCase):
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
         cluster_exp = np.array(['t_2', 't_1', 't_0'])
         cluster = hc.get_n_clusters_for_token(word_vectors, 't',
-                                              AffinityName.COSINE,
+                                              MetricName.COSINE,
                                               LinkageName.SINGLE, 3)
         np.testing.assert_array_equal(cluster_exp, cluster)
 
@@ -70,7 +70,7 @@ class TestClustering(TestCase):
                                        })
 
         dictionary_res = hc.cluster_vectors_per_token(word_vectors, id_map_red,
-                                                      AffinityName.COSINE,
+                                                      MetricName.COSINE,
                                                       LinkageName.SINGLE, 0.5)
         pd.testing.assert_frame_equal(dictionary_exp, dictionary_res)
 
@@ -89,7 +89,7 @@ class TestClustering(TestCase):
                                        })
 
         dictionary_res = hc.cluster_vectors_per_token_with_known_sense_count(
-            word_vectors, id_map_red, AffinityName.COSINE, LinkageName.SINGLE)
+            word_vectors, id_map_red, MetricName.COSINE, LinkageName.SINGLE)
         pd.testing.assert_frame_equal(dictionary_exp, dictionary_res)
 
 

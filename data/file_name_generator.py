@@ -1,5 +1,5 @@
-from clustering.affinity_name import AffinityName
 from clustering.linkage_name import LinkageName
+from clustering.metric_name import MetricName
 from data.corpus_name import CorpusName
 
 
@@ -8,13 +8,13 @@ def gen_dictionary_file_name(experiment_prefix: str) -> str:
     return f"{experiment_prefix}-dictionary.pkl"
 
 
-def gen_experiment_prefix(corpus: CorpusName, affinity: AffinityName,
+def gen_experiment_prefix(corpus: CorpusName, affinity: MetricName,
                           linkage: LinkageName, distance: float) -> str:
     """ Generates a prefix for experiment result files. """
     return f"{corpus}-affinity_{affinity}-linkage_{linkage}-dist_{distance}"
 
 
-def gen_experiment_prefix_no_dist(corpus: CorpusName, affinity: AffinityName,
+def gen_experiment_prefix_no_dist(corpus: CorpusName, affinity: MetricName,
                                   linkage: LinkageName) -> str:
     """ Generates a prefix for experiment result files. """
     return f"{corpus}-affinity_{affinity}-linkage_{linkage}-no_dist"

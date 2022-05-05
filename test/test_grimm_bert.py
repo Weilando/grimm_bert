@@ -1,12 +1,20 @@
 from argparse import ArgumentParser, ArgumentError
 from io import StringIO
+from tempfile import TemporaryDirectory
 from unittest import TestCase, main
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
+import pandas as pd
+
+import grimm_bert
 import grimm_bert as gb
+from clustering.linkage_name import LinkageName
+from clustering.metric_name import MetricName
+from data.corpus_handler import CorpusHandler
+from data.corpus_name import CorpusName
 
 
-class TestGrimmBert(TestCase):
+class TestGrimmBertArgumentParser(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.parser = gb.build_argument_parser()
@@ -70,6 +78,35 @@ class TestGrimmBert(TestCase):
 
     def test_is_max_dist_defined_not_defined(self):
         self.assertFalse(gb.is_max_dist_defined(None))
+
+
+class TestGrimmBert(TestCase):
+    def setUp(self):
+        self.config = {'corpus_name': CorpusName.TOY,
+                       'get_sentences.return_value': pd.DataFrame({
+                           'sentence': [['hello', 'world', '!'],
+                                        ['hello', '!']]}),
+                       'get_sentences_as_list.return_value':
+                           [['hello', 'world', '!'], ['hello', '!']],
+                       'get_tagged_tokens.return_value': pd.DataFrame({
+                           'token': ['hello', 'world', '!', 'hello', '!'],
+                           'sense': ['a', 'b', 'c', 'a', 'c'],
+                           'tagged_sense': [True, True, False, True, True]})
+                       }
+
+    def test_create_dictionary(self):
+        """ Should execute the pipeline without errors. """
+        with TemporaryDirectory() as res_path:
+            grimm_bert.create_dictionary(
+                Mock(CorpusHandler, **self.config), './model_cache', res_path,
+                MetricName.EUCLIDEAN, LinkageName.SINGLE, 0.2)
+
+    def test_create_dictionary_with_known_sense_counts(self):
+        """ Should execute the pipeline without errors. """
+        with TemporaryDirectory() as res_path:
+            grimm_bert.create_dictionary_with_known_sense_counts(
+                Mock(CorpusHandler, **self.config), './model_cache', res_path,
+                MetricName.EUCLIDEAN, LinkageName.SINGLE)
 
 
 if __name__ == '__main__':

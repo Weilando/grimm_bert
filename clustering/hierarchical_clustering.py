@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
 
-from clustering.affinity_name import AffinityName
 from clustering.linkage_name import LinkageName
+from clustering.metric_name import MetricName
 
 
 def get_clusters_for_token(word_vectors: np.ndarray, token: str,
-                           affinity: AffinityName, linkage: LinkageName,
+                           affinity: MetricName, linkage: LinkageName,
                            max_distance: float) -> np.ndarray:
     """ Clusters rows from 'word_vectors' hierarchically with 'affinity' metric
     and 'linkage' criterion to compute linkage. Vectors within 'max_distance'
@@ -25,7 +25,7 @@ def get_clusters_for_token(word_vectors: np.ndarray, token: str,
 
 
 def get_n_clusters_for_token(word_vectors: np.ndarray, token: str,
-                             affinity: AffinityName, linkage: LinkageName,
+                             affinity: MetricName, linkage: LinkageName,
                              n_clusters: int) -> np.ndarray:
     """ Forms 'n_clusters' clusters of rows from 'word_vectors' hierarchically
     using the 'affinity' metric and 'linkage' criterion to compute linkage.
@@ -44,7 +44,7 @@ def get_n_clusters_for_token(word_vectors: np.ndarray, token: str,
 
 def cluster_vectors_per_token(word_vectors: np.ndarray,
                               id_map_reduced: pd.DataFrame,
-                              affinity: AffinityName, linkage: LinkageName,
+                              affinity: MetricName, linkage: LinkageName,
                               max_distance: float) -> pd.DataFrame:
     """ Clusters rows of 'word_vectors' hierarchically per token using the
     'affinity' metric and 'linkage' criterion. Adds unique sense labels. Splits
@@ -60,7 +60,7 @@ def cluster_vectors_per_token(word_vectors: np.ndarray,
 
 def cluster_vectors_per_token_with_known_sense_count(
         word_vectors: np.ndarray, id_map_reduced: pd.DataFrame,
-        affinity: AffinityName, linkage: LinkageName) -> pd.DataFrame:
+        affinity: MetricName, linkage: LinkageName) -> pd.DataFrame:
     """ Clusters rows of 'word_vectors' hierarchically per token from
     'id_map_reduced' using the 'affinity' metric and 'linkage' criterion. Adds
     unique sense labels. Requires the column 'unique_sense_count' in

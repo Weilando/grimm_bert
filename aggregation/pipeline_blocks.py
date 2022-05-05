@@ -5,12 +5,13 @@ from typing import List, Dict, Tuple
 import numpy as np
 import pandas as pd
 from model.character_bert.character_cnn_utils import CharacterIndexer
-from sklearn.metrics import adjusted_rand_score
+from sklearn.metrics import adjusted_rand_score, silhouette_score
 
 import aggregation.aggregator as ag
 import data.file_handler as fh
 import data.file_name_generator as fg
 import model.model_tools as mt
+from clustering.metric_name import MetricName
 from data.corpus_handler import CorpusHandler
 
 
@@ -105,6 +106,33 @@ def calc_ari_per_token(tagged_tokens: pd.DataFrame, dictionary: pd.DataFrame) \
         axis=1)
     dictionary['tagged_token'] = dictionary.apply(
         lambda r: all(tagged_tokens.tagged_sense[r.token_id]),
+        axis=1)
+
+    return dictionary
+
+
+def calc_silhouette_score_per_sample(word_vectors: np.array, labels: np.ndarray,
+                                     metric: MetricName) -> float:
+    """ Calculates the Silhouette Coefficient for the given clustering or NaN,
+    if the number of unique labels is invalid. The score is defined for
+    2 <= n_labels <= n_samples - 1. """
+    try:
+        return silhouette_score(X=word_vectors, labels=labels, metric=metric)
+    except ValueError:
+        return np.NaN
+
+
+def calc_silhouette_score_per_token(
+        word_vectors: np.ndarray, dictionary: pd.DataFrame,
+        metric: MetricName) -> pd.DataFrame:
+    """ Adds a column with a Silhouette Coefficient per token and senses to
+    'dictionary' based on the given 'metric'. Does not treat generated tokens
+    differently. """
+    dictionary['silhouette_score'] = dictionary.apply(
+        lambda r: calc_silhouette_score_per_sample(
+            word_vectors[r.token_id],
+            ag.extract_int_senses_from_list(r.sense),
+            metric=metric),
         axis=1)
 
     return dictionary

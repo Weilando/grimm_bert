@@ -9,8 +9,8 @@ import aggregation.pipeline_blocks as pb
 import clustering.hierarchical_clustering as hc
 import data.file_handler as fh
 import data.file_name_generator as fg
-from clustering.affinity_name import AffinityName
 from clustering.linkage_name import LinkageName
+from clustering.metric_name import MetricName
 from data.corpus_handler import CorpusName, CorpusHandler
 
 current_path = os.path.dirname(os.path.abspath(__file__))
@@ -33,7 +33,7 @@ def build_argument_parser() -> ArgumentParser:
                    choices=CorpusName.get_names(),
                    help="name of the base corpus for the dictionary")
     p.add_argument('affinity_name', type=str, default=None,
-                   choices=AffinityName.get_names(),
+                   choices=MetricName.get_names(),
                    help="name of the linkage criterion for clustering")
     p.add_argument('linkage_name', type=str, default=None,
                    choices=LinkageName.get_names(),
@@ -63,7 +63,7 @@ def is_max_dist_defined(max_dist: Union[float, None]) -> bool:
 
 def create_dictionary(
         corpus: CorpusHandler, model_cache: str, results_path: str,
-        affinity_name: AffinityName, linkage_name: LinkageName,
+        affinity_name: MetricName, linkage_name: LinkageName,
         max_dist: float) -> None:
     """ Creates a dictionary from the given corpus with word vectors from
     CharacterBERT and hierarchical clustering with the specified affinity
@@ -98,7 +98,7 @@ def create_dictionary(
 
 def create_dictionary_with_known_sense_counts(
         corpus: CorpusHandler, model_cache: str, results_path: str,
-        affinity_name: AffinityName, linkage_name: LinkageName) -> None:
+        affinity_name: MetricName, linkage_name: LinkageName) -> None:
     """ Creates a dictionary from the given corpus with word vectors from
     CharacterBERT and hierarchical clustering with the specified affinity
     metric, linkage criterion and the true unique sense count per token. """

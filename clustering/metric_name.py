@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 
 
-class AffinityName(str, Enum):
+class MetricName(str, Enum):
     COSINE = "cosine"
     EUCLIDEAN = "euclidean"
 
