@@ -8,10 +8,10 @@ from data.corpus_handler import CorpusName, CorpusHandler
 
 
 class TestCorpusName(TestCase):
-    def test_get_names(self):
-        expected = ['semcor', 'semeval2007', 'semeval2013', 'semeval2015',
-                    'senseval2', 'senseval3', 'toy']
-        self.assertEqual(expected, CorpusName.get_names())
+    def test_get_values(self):
+        expected = ['SemCor', 'SemEval2007', 'SemEval2013', 'SemEval2015',
+                    'Senseval2', 'Senseval3', 'Toy']
+        self.assertEqual(expected, CorpusName.get_values())
 
     def test_is_wsdeval_name(self):
         self.assertFalse(CorpusName.TOY.is_wsdeval_name)

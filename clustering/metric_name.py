@@ -3,9 +3,9 @@ from typing import List
 
 
 class MetricName(str, Enum):
-    COSINE = "cosine"
-    EUCLIDEAN = "euclidean"
+    COSINE = "Cosine"
+    EUCLIDEAN = "Euclidean"
 
     @classmethod
-    def get_names(cls) -> List[str]:
-        return list(map(lambda name: name.value, cls))
+    def get_values(cls) -> List[str]:
+        return list(map(lambda item: item.value, cls))

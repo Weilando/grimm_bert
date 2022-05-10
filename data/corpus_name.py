@@ -3,17 +3,17 @@ from typing import List
 
 
 class CorpusName(str, Enum):
-    SEMCOR = 'semcor'
-    SEMEVAL07 = "semeval2007"
-    SEMEVAL13 = "semeval2013"
-    SEMEVAL15 = "semeval2015"
-    SENSEVAL2 = "senseval2"
-    SENSEVAL3 = "senseval3"
-    TOY = 'toy'
+    SEMCOR = 'SemCor'
+    SEMEVAL07 = "SemEval2007"
+    SEMEVAL13 = "SemEval2013"
+    SEMEVAL15 = "SemEval2015"
+    SENSEVAL2 = "Senseval2"
+    SENSEVAL3 = "Senseval3"
+    TOY = 'Toy'
 
     @classmethod
-    def get_names(cls) -> List[str]:
-        return list(map(lambda name: name.value, cls))
+    def get_values(cls) -> List[str]:
+        return list(map(lambda item: item.value, cls))
 
     @property
     def is_wsdeval_name(self):

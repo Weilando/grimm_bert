@@ -3,12 +3,12 @@ from typing import List
 
 
 class LinkageName(str, Enum):
-    AVERAGE = "average"
-    COMPLETE = "complete"
-    SINGLE = "single"
+    AVERAGE = "Average"
+    COMPLETE = "Complete"
+    SINGLE = "Single"
 
     # Ward Linkage requires Euclidean distances.
 
     @classmethod
-    def get_names(cls) -> List[str]:
-        return list(map(lambda name: name.value, cls))
+    def get_values(cls) -> List[str]:
+        return list(map(lambda item: item.value, cls))

@@ -30,13 +30,13 @@ def build_argument_parser() -> ArgumentParser:
                        formatter_class=ArgumentDefaultsHelpFormatter)
 
     p.add_argument('corpus_name', type=str, default=None,
-                   choices=CorpusName.get_names(),
+                   choices=CorpusName.get_values(),
                    help="name of the base corpus for the dictionary")
     p.add_argument('affinity_name', type=str, default=None,
-                   choices=MetricName.get_names(),
+                   choices=MetricName.get_values(),
                    help="name of the linkage criterion for clustering")
     p.add_argument('linkage_name', type=str, default=None,
-                   choices=LinkageName.get_names(),
+                   choices=LinkageName.get_values(),
                    help="name of the linkage criterion for clustering")
 
     p.add_argument('-c', '--corpus_cache', type=str, action='store',

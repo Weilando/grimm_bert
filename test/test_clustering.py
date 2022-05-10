@@ -9,12 +9,12 @@ from clustering.metric_name import MetricName
 
 
 class TestNameDicts(TestCase):
-    def test_get_metric_names(self):
-        self.assertEqual(['cosine', 'euclidean'], MetricName.get_names())
+    def test_get_metric_name_values(self):
+        self.assertEqual(['Cosine', 'Euclidean'], MetricName.get_values())
 
-    def test_get_linkage_names(self):
-        self.assertEqual(['average', 'complete', 'single'],
-                         LinkageName.get_names())
+    def test_get_linkage_name_values(self):
+        self.assertEqual(['Average', 'Complete', 'Single'],
+                         LinkageName.get_values())
 
 
 class TestClustering(TestCase):

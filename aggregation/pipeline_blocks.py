@@ -132,7 +132,7 @@ def calc_silhouette_score_per_token(
         lambda r: calc_silhouette_score_per_sample(
             word_vectors[r.token_id],
             ag.extract_int_senses_from_list(r.sense),
-            metric=metric),
+            metric=metric.lower()),
         axis=1)
 
     return dictionary

@@ -16,8 +16,8 @@ def get_clusters_for_token(word_vectors: np.ndarray, token: str,
         return np.array([f"{token}_0"])
 
     sense_ids = AgglomerativeClustering(n_clusters=None,
-                                        affinity=affinity,
-                                        linkage=linkage,
+                                        affinity=affinity.lower(),
+                                        linkage=linkage.lower(),
                                         distance_threshold=max_distance) \
         .fit_predict(word_vectors)
 
@@ -34,8 +34,8 @@ def get_n_clusters_for_token(word_vectors: np.ndarray, token: str,
         return np.array([f"{token}_0"])
 
     sense_ids = AgglomerativeClustering(n_clusters=n_clusters,
-                                        affinity=affinity,
-                                        linkage=linkage,
+                                        affinity=affinity.lower(),
+                                        linkage=linkage.lower(),
                                         distance_threshold=None) \
         .fit_predict(word_vectors)
 
