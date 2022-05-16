@@ -1,4 +1,3 @@
-import json
 import os
 from tempfile import TemporaryDirectory
 from unittest import main, TestCase
@@ -84,17 +83,15 @@ class TestFileHandler(TestCase):
             self.assertTrue(os.path.isfile(result_file_path))
             np.testing.assert_array_equal(matrix, reconstructed_matrix)
 
-    def test_save_stats(self):
-        """ Should save a dict with statistics into a json-file. """
+    def test_save_and_load_stats(self):
+        """ Should save a dict into a json-file and load it afterwards. """
         stats = {'ari': 0.5}
         file_name = 'stats.json'
 
         with TemporaryDirectory() as tmp_dir_name:
             fh.save_stats(tmp_dir_name, file_name, stats)
-
-            with open(os.path.join(tmp_dir_name, file_name), 'r') as stats_file:
-                reconstructed_stats = json.load(stats_file)
-                self.assertEqual(stats, reconstructed_stats)
+            reconstructed_stats = fh.load_stats(tmp_dir_name, file_name)
+            self.assertEqual(stats, reconstructed_stats)
 
 
 if __name__ == '__main__':

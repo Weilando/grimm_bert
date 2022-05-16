@@ -1,25 +1,9 @@
-from clustering.linkage_name import LinkageName
-from clustering.metric_name import MetricName
 from data.corpus_name import CorpusName
 
 
 def gen_dictionary_file_name(experiment_prefix: str) -> str:
     """ Generates a file name for a dictionary DataFrame. """
     return f"{experiment_prefix}-dictionary.pkl"
-
-
-def gen_experiment_prefix(corpus: CorpusName, affinity: MetricName,
-                          linkage: LinkageName, distance: float) -> str:
-    """ Generates a prefix for experiment result files. """
-    return f"{corpus.lower()}-affinity_{affinity.lower()}-" \
-           f"linkage_{linkage.lower()}-dist_{distance}"
-
-
-def gen_experiment_prefix_no_dist(corpus: CorpusName, affinity: MetricName,
-                                  linkage: LinkageName) -> str:
-    """ Generates a prefix for experiment result files. """
-    return f"{corpus.lower()}-affinity_{affinity.lower()}" \
-           f"-linkage_{linkage.lower()}-no_dist"
 
 
 def gen_raw_id_map_file_name(corpus: CorpusName) -> str:

@@ -34,6 +34,14 @@ def load_matrix(absolute_path: os.path, file_name: str) -> np.ndarray:
         return result_file['m']
 
 
+def load_stats(absolute_path: os.path, file_name: str) -> Dict:
+    """ Loads a dict from a json-file with 'file_name' at 'absolute_path'. """
+    file_path = os.path.join(absolute_path, file_name)
+
+    with open(file_path, 'r') as stats_file:
+        return json.load(stats_file)
+
+
 def save_df(absolute_path: os.path, file_name: str, df: pd.DataFrame):
     """ Saves 'df' in a pkl-file with 'file_name' at 'absolute_path'. """
     file_path = os.path.join(absolute_path, file_name)

@@ -30,8 +30,7 @@ We take a list of sentences as input, where each sentence is list of str tokens.
 3. Calculate one contextualized word vector per token with a
    pre-trained [CharacterBERT](https://github.com/helboukkouri/character-bert) model.
 4. Group all corresponding word vectors and references per token.
-5. Perform word sense disambiguation per token with hierarchical clustering based on cosine similarities.
-6. Evaluate the dictionary with the adjusted rand index (ARI).
+5. Perform word sense disambiguation per token with hierarchical clustering.
 
 If no maximum distance is given, the pipeline uses the number of senses from the ground truth to cluster word vectors.
 Otherwise, it uses the maximum distance to distinguish different senses per token.

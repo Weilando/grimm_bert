@@ -122,7 +122,7 @@ class TestPipelineBlocks(TestCase):
     def test_calc_silhouette_score_per_token(self):
         """ Should add a column with one Silhouette Coefficient per token and
         NaN if too few or many labels are given to calculate the score. """
-        word_vecs = np.array([[5, 2], [9, 0], [5, 3], [1, 0], [0, 1], [7, 1]])
+        vectors = np.array([[5, 2], [9, 0], [5, 3], [1, 0], [0, 1], [7, 1]])
         dictionary = pd.DataFrame({
             'token': ['a', 'b', '.'],
             'token_id': [[0, 2], [1, 3, 4], [5]],
@@ -133,6 +133,6 @@ class TestPipelineBlocks(TestCase):
             'sense': [['a0', 'a1'], ['b0', 'b1', 'b1'], ['.0']],
             'silhouette_score': [np.NaN, 0.5557, np.NaN]})
 
-        result = pb.calc_silhouette_score_per_token(word_vecs, dictionary,
+        result = pb.calc_silhouette_score_per_token(vectors, dictionary,
                                                     MetricName.EUCLIDEAN)
         pd.testing.assert_frame_equal(expected, result, atol=1e-4)
