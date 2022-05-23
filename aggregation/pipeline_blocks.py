@@ -30,7 +30,6 @@ def add_sense_counts_to_id_map(tagged_tokens: pd.DataFrame,
                                id_map: pd.DataFrame) -> pd.DataFrame:
     """ Loads and lower cases tagged tokens from the specified corpus and adds
     the number of unique senses per token to 'id_map'. """
-    tagged_tokens['token'] = tagged_tokens.token.str.lower()
     sense_counts = ag.count_unique_senses_per_token(
         tagged_tokens[tagged_tokens.tagged_sense])
 
