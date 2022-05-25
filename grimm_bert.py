@@ -52,8 +52,8 @@ def build_argument_parser() -> ArgumentParser:
                    default=None, help="maximum distance for clustering")
     p.add_argument('-s', '--min_silhouette', type=float, action='store',
                    default=None, help="presumed Silhouette Coefficient for k=1")
-    p.add_argument('-k', '--known_senses', type=bool, action='store',
-                   default=False, help="usage of ground truth sense counts")
+    p.add_argument('-k', '--known_senses', action='store_true', default=False,
+                   help="usage of ground truth sense counts")
     p.add_argument('-l', '--log', type=str, action='store',
                    default=DEFAULT_LOG_LEVEL, help="logging level")
 

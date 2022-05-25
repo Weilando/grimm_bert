@@ -1,3 +1,5 @@
+from typing import Tuple, cast
+
 import numpy as np
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
@@ -9,20 +11,33 @@ from clustering.metric_name import MetricName
 
 def get_clusters_for_token_via_cluster_count(
         word_vectors: np.ndarray, token: str, affinity: MetricName,
-        linkage: LinkageName, cluster_count: int) -> np.ndarray:
+        linkage: LinkageName, cluster_count: int) \
+        -> Tuple[np.ndarray, np.ndarray]:
     """ Forms 'cluster_count' clusters of rows from 'word_vectors'
     hierarchically using the 'affinity' metric and 'linkage' criterion to
-    compute linkage. Names the clusters according to 'token'. """
+    compute linkage. Names the clusters according to 'token'. Also returns the
+    last linkage distance before and after the cut if they exist. """
     if word_vectors.shape[0] < 2:
-        return np.array([f"{token}_0"])
+        return np.array([f"{token}_0"]), np.array([], dtype=float)
 
-    sense_ids = AgglomerativeClustering(n_clusters=cluster_count,
-                                        affinity=affinity.lower(),
-                                        linkage=linkage.lower(),
-                                        distance_threshold=None) \
-        .fit_predict(word_vectors)
+    clustering = AgglomerativeClustering(n_clusters=cluster_count,
+                                         affinity=affinity.lower(),
+                                         linkage=linkage.lower(),
+                                         distance_threshold=None,
+                                         compute_distances=True) \
+        .fit(word_vectors)
+    clustering = cast(AgglomerativeClustering, clustering)
 
-    return np.array([f"{token}_{sense_id}" for sense_id in sense_ids])
+    sense_labels = np.array([f"{token}_{sense_id}" for sense_id
+                             in clustering.labels_])
+
+    if cluster_count == 2:
+        last_cut_distances = clustering.distances_[-cluster_count:]
+    else:
+        last_cut_distances = clustering.distances_[-cluster_count:
+                                                   -cluster_count + 2]
+
+    return sense_labels, last_cut_distances
 
 
 def get_clusters_for_token_via_max_distance(
@@ -78,11 +93,11 @@ def cluster_vectors_per_token_with_known_sense_count(
     'id_map_reduced' using the 'affinity' metric and 'linkage' criterion. Adds
     unique sense labels. Requires the column 'unique_sense_count' in
     'id_map_reduced' with the number of clusters to find. """
-    id_map_reduced['sense'] = id_map_reduced.apply(
+    id_map_reduced[['sense', 'last_cut_distances']] = id_map_reduced.apply(
         lambda r: get_clusters_for_token_via_cluster_count(
             word_vectors[r.token_id], r.token, affinity, linkage,
             r.unique_sense_count),
-        axis=1)
+        axis=1, result_type='expand')
 
     return id_map_reduced
 
