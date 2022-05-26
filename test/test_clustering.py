@@ -18,29 +18,60 @@ class TestNameDicts(TestCase):
 
 
 class TestClustering(TestCase):
+    def test_get_last_cut_dist_and_successor(self):
+        """ Should return the correct last cut linkage distance and its
+        successor and handle borders correctly. """
+        distances = np.array([0, 2, 4])
+        self.assertEqual((4, 4),
+                         hc.get_last_cut_dist_and_successor(distances, 1))
+        self.assertEqual((2, 4),
+                         hc.get_last_cut_dist_and_successor(distances, 2))
+        self.assertEqual((0, 2),
+                         hc.get_last_cut_dist_and_successor(distances, 3))
+
+    def test_get_clusters_for_token_via_cluster_count_1_sense(self):
+        """ Should generate one cluster. """
+        word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
+        cluster_exp = np.array(['t_0', 't_0', 't_0'])
+        last_cut_dist_exp, last_cut_dist_successor_exp = 1.9806, 1.9806
+        cluster, last_cut_dist, last_cut_dist_successor = \
+            hc.get_clusters_for_token_via_cluster_count(
+                word_vectors, 't', MetricName.COSINE, LinkageName.SINGLE, 1)
+        np.testing.assert_array_equal(cluster_exp, cluster)
+        np.testing.assert_almost_equal(last_cut_dist_exp, last_cut_dist,
+                                       decimal=4)
+        np.testing.assert_almost_equal(last_cut_dist_successor_exp,
+                                       last_cut_dist_successor, decimal=4)
+
     def test_get_clusters_for_token_via_cluster_count_2_senses(self):
         """ Should generate two clusters and assign the last word vector to a
         single cluster, as its cosine distance to the other vectors is high. """
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
         cluster_exp = np.array(['t_0', 't_0', 't_1'])
-        last_cut_dist_exp = np.array([0.0101, 1.9806])
-        cluster, last_cut_dist = hc.get_clusters_for_token_via_cluster_count(
-            word_vectors, 't', MetricName.COSINE, LinkageName.SINGLE, 2)
+        last_cut_dist_exp, last_cut_dist_successor_exp = 0.0101, 1.9806
+        cluster, last_cut_dist, last_cut_dist_successor = \
+            hc.get_clusters_for_token_via_cluster_count(
+                word_vectors, 't', MetricName.COSINE, LinkageName.SINGLE, 2)
         np.testing.assert_array_equal(cluster_exp, cluster)
-        np.testing.assert_array_almost_equal(last_cut_dist_exp, last_cut_dist,
-                                             decimal=4)
+        np.testing.assert_almost_equal(last_cut_dist_exp, last_cut_dist,
+                                       decimal=4)
+        np.testing.assert_almost_equal(last_cut_dist_successor_exp,
+                                       last_cut_dist_successor, decimal=4)
 
     def test_get_clusters_for_token_via_cluster_count_3_senses(self):
         """ Should generate three clusters and assign each word vector to its
         own cluster. No cut distance but its successor exists. """
         word_vectors = np.array([[.9, .0], [.7, .1], [-.5, -.1]])
         cluster_exp = np.array(['t_2', 't_1', 't_0'])
-        last_cut_dist_exp = np.array([0.0101])
-        cluster, last_cut_dist = hc.get_clusters_for_token_via_cluster_count(
-            word_vectors, 't', MetricName.COSINE, LinkageName.SINGLE, 3)
+        last_cut_dist_exp, last_cut_dist_successor_exp = 0.0101, 1.9806
+        cluster, last_cut_dist, last_cut_dist_successor = \
+            hc.get_clusters_for_token_via_cluster_count(
+                word_vectors, 't', MetricName.COSINE, LinkageName.SINGLE, 3)
         np.testing.assert_array_equal(cluster_exp, cluster)
-        np.testing.assert_array_almost_equal(last_cut_dist_exp, last_cut_dist,
-                                             decimal=4)
+        np.testing.assert_almost_equal(last_cut_dist_exp, last_cut_dist,
+                                       decimal=4)
+        np.testing.assert_almost_equal(last_cut_dist_successor_exp,
+                                       last_cut_dist_successor, decimal=4)
 
     def test_get_clusters_for_token_via_max_distance_1_token(self):
         """ Should assign one word vector to one cluster. """
@@ -88,7 +119,8 @@ class TestClustering(TestCase):
             'token_id': [[1], [0, 2, 3]],
             'unique_sense_count': [1, 2],
             'sense': [['a_0'], ['b_0', 'b_1', 'b_0']],
-            'last_cut_distances': [[], [0.0077, 1.6139]]})
+            'last_cut_dist': [np.nan, 0.0077],
+            'last_cut_dist_successor': [np.nan, 1.6139]})
 
         dictionary_res = hc.cluster_vectors_per_token_with_known_sense_count(
             word_vectors, id_map_red, MetricName.COSINE, LinkageName.SINGLE)
