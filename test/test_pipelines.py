@@ -1,3 +1,4 @@
+import os
 from tempfile import TemporaryDirectory
 from unittest import TestCase, main
 from unittest.mock import Mock
@@ -15,15 +16,16 @@ class TestPipelines(TestCase):
     def setUp(self):
         self.config = {'corpus_name': CorpusName.TOY,
                        'get_sentences.return_value': pd.DataFrame({
-                           'sentence': [['hello', 'world', '!'],
-                                        ['hello', '!']]}),
+                           'sentence': [['hello', 'world', '!']]}),
                        'get_sentences_as_list.return_value':
-                           [['hello', 'world', '!'], ['hello', '!']],
+                           [['hello', 'world', '!']],
                        'get_tagged_tokens.return_value': pd.DataFrame({
-                           'token': ['hello', 'world', '!', 'hello', '!'],
-                           'sense': ['a', 'b', 'c', 'a', 'c'],
-                           'tagged_sense': [True, True, False, True, True]})
+                           'token': ['hello', 'world', '!'],
+                           'sense': ['a', 'b', 'c'],
+                           'tagged_sense': [True, True, False]})
                        }
+        current_path = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(os.path.join(current_path, '..'))
 
     def test_create_dictionary_with_known_sense_counts(self):
         """ Should execute the pipeline without errors. """
@@ -36,7 +38,7 @@ class TestPipelines(TestCase):
         """ Should execute the pipeline without errors. """
         with TemporaryDirectory() as res_path:
             aggregation.pipelines.create_dictionary_with_max_distance(
-                Mock(CorpusHandler, **self.config), './model_cache', res_path,
+                Mock(CorpusHandler, **self.config), 'model_cache', res_path,
                 MetricName.EUCLIDEAN, LinkageName.SINGLE, 0.2, 'exp_name')
 
     def test_create_dictionary_with_min_silhouette(self):

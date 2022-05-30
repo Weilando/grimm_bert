@@ -1,7 +1,6 @@
 import os
 from tempfile import TemporaryDirectory
 from unittest import main, TestCase
-from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -10,39 +9,28 @@ import data.file_handler as fh
 
 
 class TestFileHandler(TestCase):
-    @patch('data.file_handler.os')
-    def test_add_and_get_absolute_path(self, mocked_os):
+    def test_add_and_get_absolute_path(self):
         """ Should return the correct absolute result path. """
-        expected_path = "//root/results"
+        with TemporaryDirectory() as tmp_dir_name:
+            os.chdir(tmp_dir_name)
+            expected_path = os.path.join(os.getcwd(), 'results')
+            os.mkdir(expected_path)
 
-        mocked_os.getcwd.return_value = "//root"
-        mocked_os.path.exists.return_value = True
-        mocked_os.path.join.return_value = expected_path
+            result_path = fh.add_and_get_abs_path("results")
 
-        result_path = fh.add_and_get_abs_path("results")
+            self.assertEqual(expected_path, result_path)
+            self.assertTrue(os.path.exists(expected_path))
 
-        self.assertEqual(expected_path, result_path)
-        mocked_os.getcwd.assert_called_once()
-        mocked_os.path.exists.assert_called_once_with(expected_path)
-        mocked_os.path.join.called_once_with("//root", "results")
-        mocked_os.mkdir.assert_not_called()
-
-    @patch('data.file_handler.os')
-    def test_add_and_get_absolute_path_with_mkdir(self, mocked_os):
+    def test_add_and_get_absolute_path_with_mkdir(self):
         """ Should return the correct absolute path and add the directory. """
-        expected_path = "//root/results"
+        with TemporaryDirectory() as tmp_dir_name:
+            os.chdir(tmp_dir_name)
+            expected_path = os.path.join(os.getcwd(), 'results')
 
-        mocked_os.getcwd.return_value = "//root"
-        mocked_os.path.exists.return_value = False
-        mocked_os.path.join.return_value = expected_path
+            result_path = fh.add_and_get_abs_path("results")
 
-        result_path = fh.add_and_get_abs_path("results")
-
-        self.assertEqual(expected_path, result_path)
-        mocked_os.getcwd.assert_called_once()
-        mocked_os.path.exists.assert_called_once_with(expected_path)
-        mocked_os.path.join.called_once_with("//root", "results")
-        mocked_os.mkdir.assert_called_once_with(expected_path)
+            self.assertEqual(expected_path, result_path)
+            self.assertTrue(os.path.exists(expected_path))
 
     def test_file_does_exist(self):
         with TemporaryDirectory() as tmp_dir_name:

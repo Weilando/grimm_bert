@@ -1,3 +1,4 @@
+import os
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest.mock import patch
@@ -75,6 +76,7 @@ class TestPipelineBlocks(TestCase):
         """ Should calculate the word vectors and id_map from scratch, as no
         cached files exist. """
         with TemporaryDirectory() as tmp_dir:
+            os.chdir(tmp_dir)
             corpus = CorpusHandler(CorpusName.TOY, tmp_dir)
             word_vectors, id_map = pb.get_word_vectors(corpus, tmp_dir, tmp_dir)
 

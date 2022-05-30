@@ -6,6 +6,7 @@ from clustering.linkage_name import LinkageName
 from clustering.metric_name import MetricName
 from data import file_handler as fh, file_name_generator as fg
 from data.corpus_handler import CorpusHandler
+from model.model_name import ModelName
 
 
 def create_dictionary_with_known_sense_counts(
@@ -16,7 +17,8 @@ def create_dictionary_with_known_sense_counts(
     CharacterBERT and hierarchical clustering with the specified affinity
     metric, linkage criterion and the true unique sense count per token. """
     stats = {'corpus_name': corpus.corpus_name, 'affinity_name': affinity_name,
-             'linkage_name': linkage_name}
+             'linkage_name': linkage_name,
+             'model_name': ModelName.CHARACTER_BERT}
 
     abs_results_path = fh.add_and_get_abs_path(results_path)
     word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,
@@ -52,7 +54,8 @@ def create_dictionary_with_max_distance(
     CharacterBERT and hierarchical clustering with the specified affinity
     metric, linkage criterion and maximum distance. """
     stats = {'corpus_name': corpus.corpus_name, 'affinity_name': affinity_name,
-             'linkage_name': linkage_name, 'max_distance': max_distance}
+             'linkage_name': linkage_name, 'max_distance': max_distance,
+             'model_name': ModelName.CHARACTER_BERT}
 
     abs_results_path = fh.add_and_get_abs_path(results_path)
     word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,
@@ -85,7 +88,8 @@ def create_dictionary_with_min_silhouette(
     and takes the clustering with the highest Silhouette Coefficient. Presumes
     'min_silhouette' for a single cluster. """
     stats = {'corpus_name': corpus.corpus_name, 'affinity_name': affinity_name,
-             'linkage_name': linkage_name, 'min_silhouette': min_silhouette}
+             'linkage_name': linkage_name, 'min_silhouette': min_silhouette,
+             'model_name': ModelName.CHARACTER_BERT}
 
     abs_results_path = fh.add_and_get_abs_path(results_path)
     word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,

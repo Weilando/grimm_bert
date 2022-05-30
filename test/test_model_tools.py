@@ -9,6 +9,13 @@ import torch
 from model.character_bert.character_cnn_utils import CharacterIndexer
 
 import model.model_tools as mt
+from model.model_name import ModelName
+
+
+class TestModelName(TestCase):
+    def test_get_values(self):
+        expected = ['CharacterBERT']
+        self.assertEqual(expected, ModelName.get_values())
 
 
 class TestModelTools(TestCase):

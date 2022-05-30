@@ -12,7 +12,7 @@ import aggregation.aggregator as ag
 
 def gen_model_cache_location(cache_directory: str, model_name: str) -> str:
     """ Generates the path for the model cache location. """
-    return os.path.join(cache_directory, model_name)
+    return os.path.abspath(os.path.join(cache_directory, model_name))
 
 
 def get_character_bert_from_cache(model_cache: str) -> CharacterBertModel:

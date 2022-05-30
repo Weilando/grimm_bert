@@ -1,4 +1,5 @@
-from tempfile import TemporaryFile
+import os
+from tempfile import TemporaryFile, TemporaryDirectory
 from unittest import TestCase, main
 from xml.etree import ElementTree
 
@@ -57,16 +58,22 @@ class TestWsdevalPreprocessor(TestCase):
             pd.testing.assert_frame_equal(expected_gold_keys, result_gold_keys)
 
     def test_get_sentences(self):
-        preprocessor = wp.WsdevalPreprocessor(self.xml_tree, self.gold_keys)
-        sentences = preprocessor.get_sentences()
+        with TemporaryDirectory() as tmp_dir:
+            os.chdir(tmp_dir)
+            preprocessor = wp.WsdevalPreprocessor(self.xml_tree, self.gold_keys,
+                                                  corpus_cache_path=tmp_dir)
+            sentences = preprocessor.get_sentences()
         expected_sentences = pd.DataFrame({
             'sentence': [['this', 'doc', 'is', 'a', 'summary', '.'],
                          ['how', 'does', 'it', 'work', '?']]})
         pd.testing.assert_frame_equal(expected_sentences, sentences)
 
     def test_get_tagged_tokens(self):
-        preprocessor = wp.WsdevalPreprocessor(self.xml_tree, self.gold_keys)
-        tokens = preprocessor.get_tagged_tokens()
+        with TemporaryDirectory() as tmp_dir:
+            os.chdir(tmp_dir)
+            preprocessor = wp.WsdevalPreprocessor(self.xml_tree, self.gold_keys,
+                                                  corpus_cache_path=tmp_dir)
+            tokens = preprocessor.get_tagged_tokens()
         expected_tokens = pd.DataFrame({
             'token': ['this', 'doc', 'is', 'a', 'summary', '.', 'how', 'does',
                       'it', 'work', '?'],
