@@ -1,5 +1,3 @@
-import os.path
-from tempfile import TemporaryDirectory
 from unittest import TestCase, main
 from unittest.mock import patch
 
@@ -19,11 +17,6 @@ class TestModelName(TestCase):
 
 
 class TestModelTools(TestCase):
-    def test_gen_model_cache_location(self):
-        with TemporaryDirectory() as tmp_dir_name:
-            self.assertEqual(mt.gen_model_cache_location(tmp_dir_name, 'name'),
-                             os.path.join(tmp_dir_name, 'name'))
-
     def test_lower_tokens(self):
         self.assertEqual(['hello', '!'], mt.lower_tokens(['HelLo', '!']))
 

@@ -1,4 +1,3 @@
-import os
 from typing import List, Tuple, Union
 
 import numpy as np
@@ -10,15 +9,9 @@ from model.character_bert.character_cnn_utils import CharacterIndexer
 import aggregation.aggregator as ag
 
 
-def gen_model_cache_location(cache_directory: str, model_name: str) -> str:
-    """ Generates the path for the model cache location. """
-    return os.path.abspath(os.path.join(cache_directory, model_name))
-
-
 def get_character_bert_from_cache(model_cache: str) -> CharacterBertModel:
-    """ Loads a general CharacterBERT model from 'model_cache'. """
-    model_path = gen_model_cache_location(model_cache, 'general_character_bert')
-    return CharacterBertModel.from_pretrained(model_path)  # default: eval mode
+    """ Loads a pretrained CharacterBERT model from 'model_cache'. """
+    return CharacterBertModel.from_pretrained(model_cache)  # default: eval mode
 
 
 def lower_tokens(tokenized_sentence: List[str]) -> List[str]:

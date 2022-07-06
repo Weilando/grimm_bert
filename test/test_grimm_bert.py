@@ -57,7 +57,7 @@ class TestGrimmBertArgumentParser(TestCase):
         self.assertEqual(parsed_args.affinity_name, MetricName.COSINE)
         self.assertEqual(parsed_args.linkage_name, LinkageName.SINGLE)
         self.assertEqual(parsed_args.corpus_cache, gb.DEFAULT_CORPUS_CACHE_DIR)
-        self.assertEqual(parsed_args.model_cache, gb.DEFAULT_MODEL_CACHE_DIR)
+        self.assertEqual(parsed_args.model_cache, gb.DEFAULT_MODEL_CACHE_PATH)
         self.assertEqual(parsed_args.results_path, gb.DEFAULT_RESULTS_PATH)
         self.assertIsNone(parsed_args.max_distance)
         self.assertEqual(parsed_args.log, gb.DEFAULT_LOG_LEVEL)

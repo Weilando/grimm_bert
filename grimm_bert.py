@@ -15,7 +15,7 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_path)
 
 DEFAULT_CORPUS_CACHE_DIR = './data/corpus_cache'
-DEFAULT_MODEL_CACHE_DIR = './model_cache'
+DEFAULT_MODEL_CACHE_PATH = './model_cache/general_character_bert'
 DEFAULT_RESULTS_PATH = './data/results'
 DEFAULT_LOG_LEVEL = 'INFO'
 
@@ -43,8 +43,8 @@ def build_argument_parser() -> ArgumentParser:
                    default=DEFAULT_CORPUS_CACHE_DIR,
                    help="relative path from project root to corpus files")
     p.add_argument('-m', '--model_cache', type=str, action='store',
-                   default=DEFAULT_MODEL_CACHE_DIR,
-                   help="relative path from project root to model files")
+                   default=DEFAULT_MODEL_CACHE_PATH,
+                   help="path to a pretrained CharacterBERT model")
     p.add_argument('-r', '--results_path', type=str, action='store',
                    default=DEFAULT_RESULTS_PATH,
                    help="relative path from project root to result files")
