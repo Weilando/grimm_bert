@@ -58,6 +58,8 @@ def flatten_list(nested_list: List[List[str]]) -> List[str]:
 class ToyPreprocessor(CorpusPreprocessor):
     def __init__(self, corpus_name: CorpusName = CorpusName.TOY,
                  corpus_cache_path: str = DEFAULT_CORPUS_CACHE_DIR):
+        """ Simple preprocessor for a hand-crafted toy corpus with focus on a
+        high density of polysemous tokens. """
         super().__init__(corpus_name, corpus_cache_path)
 
     def get_sentences(self) -> pd.DataFrame:

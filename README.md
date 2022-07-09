@@ -10,16 +10,19 @@ to [create a conda environment](https://docs.conda.io/projects/conda/en/latest/u
 with all necessary python packages.
 
 Use the corresponding pre-processor to generate suitable input files for the pipeline.
-The input files from WSDEval need to be in [data/wsdeval_corpora](data/wsdeval_corpora).
+The input files from WSDEval need to be in [data/wsdeval_corpora](/data/wsdeval_corpora) and raw text corpora
+in [data/raw_text_corpora](/data/raw_text_corpora).
 
-| Corpus  | Description                                                | Pre-Processor                                             |
-|---------|------------------------------------------------------------|-----------------------------------------------------------|
-| toy     | Simple corpus for small tests.                             | [data.ToyPreprocessor](/data/toy_preprocessor.py)         |
-| WSDEval | Evaluation corpora from semeval2007/13/15 and senseval2/3. | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) |
-| SemCor  | Semantic concordance with more than 800k tokens.           | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) |
+| Corpus      | Description                                                  | Pre-Processor                                              |
+|-------------|--------------------------------------------------------------|------------------------------------------------------------|
+| Toy         | Simple corpus for small tests.                               | [data.ToyPreprocessor](/data/toy_preprocessor.py)          |
+| WSDEval     | Evaluation corpora from SemEval 2007/13/15 and Senseval 2/3. | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py)  |
+| SemCor      | Semantic concordance with more than 800k tokens.             | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py)  |
+| Shakespeare | Shakespeare's works in raw text.                             | [data.RawTextPreprocessor](/data/raw_text_preprocessor.py) |
 
-To add a new corpus, create a subclass of [/data/CorpusPreprocessor](/data/corpus_preprocessor.py).
-You might want to apply an uncased tokenizer, e.g., `BertTokenizer.basic_tokenizer`.
+Please use [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) to add a corpus in WSDEval's XML-format
+or [data.RawTextPreprocessor](/data/raw_text_preprocessor.py) for a raw text corpus.
+If both do not apply, create a new subclass of [data.CorpusPreprocessor](/data/corpus_preprocessor.py).
 
 ## Pipeline
 
@@ -39,8 +42,8 @@ Otherwise, it uses the maximum distance to distinguish different senses per toke
 
 The software uses caches to enable executions in offline HPC environments and to speed up repeated calculations.
 
-- Models and tokenizers: [/model_cache](/model_cache)
-- Corpora: [/data/corpus_cache](/data/corpus_cache)
+- Models and tokenizers: [model_cache](/model_cache)
+- Corpora: [data/corpus_cache](/data/corpus_cache)
 - Word vector matrix and raw `id_map` per corpus: user defined result location
 
 ## System Requirements
@@ -52,4 +55,4 @@ further runs do not need multiple cores.
 
 ## Tests
 
-Run `python -m unittest` in the main directory to execute all tests in [/test](/test).
+Run `python -m unittest` in the main directory to execute all tests in [test](/test).

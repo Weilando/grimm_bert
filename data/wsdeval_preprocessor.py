@@ -43,6 +43,9 @@ class WsdevalPreprocessor(CorpusPreprocessor):
     def __init__(self, xml_tree: ElementTree.Element, gold_keys: pd.DataFrame,
                  corpus_name: CorpusName = CorpusName.SEMEVAL15,
                  corpus_cache_path: str = DEFAULT_CORPUS_CACHE_DIR):
+        """ Preprocessor for corpora in the WSDEval xml-format. Adds gold
+        standard semantic tags if available and generates generic tags else.
+        Lowers each token. """
         super().__init__(corpus_name, corpus_cache_path)
         assert corpus_name.is_wsdeval_name
         self.xml_tree = add_senses_and_simplify_xml(xml_tree, gold_keys)

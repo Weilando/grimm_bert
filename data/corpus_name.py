@@ -9,6 +9,7 @@ class CorpusName(str, Enum):
     SEMEVAL15 = "SemEval2015"
     SENSEVAL2 = "Senseval2"
     SENSEVAL3 = "Senseval3"
+    SHAKESPEARE = "Shakespeare"
     TOY = 'Toy'
 
     @classmethod
