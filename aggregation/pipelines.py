@@ -1,26 +1,22 @@
 import logging
 
+import pandas as pd
+
 from aggregation import pipeline_blocks as pb, aggregator as ag
 from clustering import hierarchical_clustering as hc
 from clustering.linkage_name import LinkageName
 from clustering.metric_name import MetricName
 from data import file_handler as fh, file_name_generator as fg
 from data.corpus_handler import CorpusHandler
-from model.model_name import ModelName
 
 
 def create_dictionary_with_known_sense_counts(
-        corpus: CorpusHandler, model_cache: str, results_path: str,
+        corpus: CorpusHandler, model_cache: str, abs_results_path: str,
         affinity_name: MetricName, linkage_name: LinkageName,
-        experiment_name: str) -> None:
+        experiment_name: str, stats: dict) -> pd.DataFrame:
     """ Creates a dictionary from the given corpus with word vectors from
     CharacterBERT and hierarchical clustering with the specified affinity
     metric, linkage criterion and the true unique sense count per token. """
-    stats = {'corpus_name': corpus.corpus_name, 'affinity_name': affinity_name,
-             'linkage_name': linkage_name,
-             'model_name': ModelName.CHARACTER_BERT}
-
-    abs_results_path = fh.add_and_get_abs_path(results_path)
     word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,
                                                abs_results_path)
 
@@ -41,23 +37,19 @@ def create_dictionary_with_known_sense_counts(
     dict_senses = ag.extract_flat_senses(dictionary)
     stats.update(ag.count_total_and_unique(dict_senses, 'sense'))
     stats.update(pb.calc_ari(tagged_tokens, dict_senses))
-    fh.save_stats(abs_results_path,
-                  fg.gen_stats_file_name(experiment_name),
-                  stats)
+    fh.save_stats(
+        abs_results_path, fg.gen_stats_file_name(experiment_name), stats)
+
+    return dictionary
 
 
 def create_dictionary_with_max_distance(
-        corpus: CorpusHandler, model_cache: str, results_path: str,
+        corpus: CorpusHandler, model_cache: str, abs_results_path: str,
         affinity_name: MetricName, linkage_name: LinkageName,
-        max_distance: float, experiment_name: str) -> None:
+        max_distance: float, experiment_name: str, stats: dict) -> pd.DataFrame:
     """ Creates a dictionary from the given corpus with word vectors from
     CharacterBERT and hierarchical clustering with the specified affinity
     metric, linkage criterion and maximum distance. """
-    stats = {'corpus_name': corpus.corpus_name, 'affinity_name': affinity_name,
-             'linkage_name': linkage_name, 'max_distance': max_distance,
-             'model_name': ModelName.CHARACTER_BERT}
-
-    abs_results_path = fh.add_and_get_abs_path(results_path)
     word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,
                                                abs_results_path)
 
@@ -77,21 +69,19 @@ def create_dictionary_with_max_distance(
     fh.save_stats(
         abs_results_path, fg.gen_stats_file_name(experiment_name), stats)
 
+    return dictionary
+
 
 def create_dictionary_with_min_silhouette(
-        corpus: CorpusHandler, model_cache: str, results_path: str,
+        corpus: CorpusHandler, model_cache: str, abs_results_path: str,
         affinity_name: MetricName, linkage_name: LinkageName,
-        min_silhouette: float, experiment_name: str) -> None:
+        min_silhouette: float, experiment_name: str, stats: dict) \
+        -> pd.DataFrame:
     """ Creates a dictionary from the given corpus with word vectors from
     CharacterBERT and hierarchical clustering with the specified affinity
     metric, linkage criterion. Iteratively increases the sense count per token
     and takes the clustering with the highest Silhouette Coefficient. Presumes
     'min_silhouette' for a single cluster. """
-    stats = {'corpus_name': corpus.corpus_name, 'affinity_name': affinity_name,
-             'linkage_name': linkage_name, 'min_silhouette': min_silhouette,
-             'model_name': ModelName.CHARACTER_BERT}
-
-    abs_results_path = fh.add_and_get_abs_path(results_path)
     word_vectors, id_map = pb.get_word_vectors(corpus, model_cache,
                                                abs_results_path)
 
@@ -110,3 +100,5 @@ def create_dictionary_with_min_silhouette(
     stats.update(pb.calc_ari(corpus.get_tagged_tokens(), dict_senses))
     fh.save_stats(
         abs_results_path, fg.gen_stats_file_name(experiment_name), stats)
+
+    return dictionary

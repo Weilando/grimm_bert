@@ -6,6 +6,11 @@ def gen_dictionary_file_name(experiment_prefix: str) -> str:
     return f"{experiment_prefix}-dictionary.pkl"
 
 
+def gen_html_dictionary_file_name(experiment_prefix: str) -> str:
+    """ Generates a file name for a dictionary HTML file. """
+    return f"{experiment_prefix}-dictionary.html"
+
+
 def gen_raw_id_map_file_name(corpus: CorpusName) -> str:
     """ Generates a file name for a raw id_map DataFrame. """
     return f"{corpus.lower()}-raw_id_map.pkl"

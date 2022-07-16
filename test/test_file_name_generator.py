@@ -8,6 +8,10 @@ class TestFileName(TestCase):
     def test_gen_dictionary_file_name(self):
         self.assertEqual('ep-dictionary.pkl', fg.gen_dictionary_file_name('ep'))
 
+    def test_gen_html_dictionary_file_name(self):
+        self.assertEqual('ep-dictionary.html',
+                         fg.gen_html_dictionary_file_name('ep'))
+
     def test_gen_raw_id_map_file_name(self):
         self.assertEqual('toy-raw_id_map.pkl',
                          fg.gen_raw_id_map_file_name(CorpusName.TOY))

@@ -33,7 +33,8 @@ class TestPipelines(TestCase):
         with TemporaryDirectory() as res_path:
             aggregation.pipelines.create_dictionary_with_known_sense_counts(
                 Mock(CorpusHandler, **self.config), DEFAULT_MODEL_CACHE_PATH,
-                res_path, MetricName.EUCLIDEAN, LinkageName.SINGLE, 'exp_name')
+                res_path, MetricName.EUCLIDEAN, LinkageName.SINGLE, 'exp_name',
+                {'a': 1})
 
     def test_create_dictionary_with_max_distance(self):
         """ Should execute the pipeline without errors. """
@@ -41,7 +42,8 @@ class TestPipelines(TestCase):
             aggregation.pipelines.create_dictionary_with_max_distance(
                 Mock(CorpusHandler, **self.config),
                 DEFAULT_MODEL_CACHE_PATH, res_path,
-                MetricName.EUCLIDEAN, LinkageName.SINGLE, 0.2, 'exp_name')
+                MetricName.EUCLIDEAN, LinkageName.SINGLE, 0.2, 'exp_name',
+                {'a': 1})
 
     def test_create_dictionary_with_min_silhouette(self):
         """ Should execute the pipeline without errors. """
@@ -49,7 +51,8 @@ class TestPipelines(TestCase):
             aggregation.pipelines.create_dictionary_with_min_silhouette(
                 Mock(CorpusHandler, **self.config),
                 DEFAULT_MODEL_CACHE_PATH, res_path,
-                MetricName.EUCLIDEAN, LinkageName.SINGLE, 0.1, 'exp_name')
+                MetricName.EUCLIDEAN, LinkageName.SINGLE, 0.1, 'exp_name',
+                {'a': 1})
 
 
 if __name__ == '__main__':

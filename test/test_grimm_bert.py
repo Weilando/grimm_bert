@@ -19,8 +19,8 @@ class TestGrimmBertArgumentParser(TestCase):
 
     def test_parse_short_options(self):
         args = ['exp_name', CorpusName.TOY.value, MetricName.COSINE.value,
-                LinkageName.AVERAGE.value,
-                '-r', 'R', '-l', 'L', '-m', 'M', '-c', 'C', '-d', '.5']
+                LinkageName.AVERAGE.value, '-r', 'R', '-l', 'L', '-m', 'M',
+                '-c', 'C', '-d', '.5', '-k', '-e']
         parsed_args = self.parser.parse_args(args)
         self.assertEqual(parsed_args.experiment_name, 'exp_name')
         self.assertEqual(parsed_args.corpus_name, CorpusName.TOY)
@@ -31,12 +31,15 @@ class TestGrimmBertArgumentParser(TestCase):
         self.assertEqual(parsed_args.results_path, 'R')
         self.assertEqual(parsed_args.max_distance, 0.5)
         self.assertEqual(parsed_args.log, 'L')
+        self.assertTrue(parsed_args.known_senses)
+        self.assertTrue(parsed_args.export_html)
 
     def test_parse_long_options(self):
         args = ['exp_name', CorpusName.TOY.value, MetricName.COSINE.value,
                 LinkageName.COMPLETE.value,
                 '--results_path', 'rp', '--log', 'INFO', '--model_cache',
-                'md', '--corpus_cache', 'cd', '--max_distance', '0.5']
+                'md', '--corpus_cache', 'cd', '--max_distance', '0.5',
+                '--known_senses', '--export_html']
         parsed_args = self.parser.parse_args(args)
         self.assertEqual(parsed_args.experiment_name, 'exp_name')
         self.assertEqual(parsed_args.corpus_name, CorpusName.TOY)
@@ -47,6 +50,8 @@ class TestGrimmBertArgumentParser(TestCase):
         self.assertEqual(parsed_args.results_path, 'rp')
         self.assertEqual(parsed_args.max_distance, 0.5)
         self.assertEqual(parsed_args.log, 'INFO')
+        self.assertTrue(parsed_args.known_senses)
+        self.assertTrue(parsed_args.export_html)
 
     def test_parse_defaults(self):
         args = ['exp_name', CorpusName.TOY.value, MetricName.COSINE.value,
@@ -61,6 +66,8 @@ class TestGrimmBertArgumentParser(TestCase):
         self.assertEqual(parsed_args.results_path, gb.DEFAULT_RESULTS_PATH)
         self.assertIsNone(parsed_args.max_distance)
         self.assertEqual(parsed_args.log, gb.DEFAULT_LOG_LEVEL)
+        self.assertFalse(parsed_args.known_senses)
+        self.assertFalse(parsed_args.export_html)
 
     @patch('sys.stderr', new_callable=StringIO)
     def test_parse_no_max_dist(self, mock_stderr):
