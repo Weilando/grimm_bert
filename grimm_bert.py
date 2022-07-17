@@ -88,7 +88,13 @@ if __name__ == '__main__':
     stats.update({'model_name': ModelName.CHARACTER_BERT})
 
     dictionary = None
-    if is_max_dist_defined(args.max_distance):
+    if args.known_senses:
+        dictionary = create_dictionary_with_known_sense_counts(
+            corpus=corpus_handler, model_cache=args.model_cache,
+            abs_results_path=abs_results_path, affinity_name=args.affinity_name,
+            linkage_name=args.linkage_name,
+            experiment_name=args.experiment_name, stats=stats)
+    elif is_max_dist_defined(args.max_distance):
         dictionary = create_dictionary_with_max_distance(
             corpus=corpus_handler, model_cache=args.model_cache,
             abs_results_path=abs_results_path, affinity_name=args.affinity_name,
@@ -99,12 +105,6 @@ if __name__ == '__main__':
             corpus=corpus_handler, model_cache=args.model_cache,
             abs_results_path=abs_results_path, affinity_name=args.affinity_name,
             linkage_name=args.linkage_name, min_silhouette=args.min_silhouette,
-            experiment_name=args.experiment_name, stats=stats)
-    elif args.known_senses:
-        dictionary = create_dictionary_with_known_sense_counts(
-            corpus=corpus_handler, model_cache=args.model_cache,
-            abs_results_path=abs_results_path, affinity_name=args.affinity_name,
-            linkage_name=args.linkage_name,
             experiment_name=args.experiment_name, stats=stats)
 
     if args.export_html:

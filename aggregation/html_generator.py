@@ -6,22 +6,30 @@ import aggregation.aggregator as ag
 
 
 def gen_html_start(experiment_name: str) -> str:
+    """ Generates the beginning of an HTML file, including a head section and
+    the beginning of the body. 'experiment' is the page title. """
     return f"<!DOCTYPE html>\n<html>\n" \
-           f"<head>\n<title>{experiment_name}</title>\n</head>" \
-           f"\n<body>\n<h1>{experiment_name}</h1>\n"
+           f"<head>\n<title>{experiment_name}</title>\n</head>\n" \
+           f"<body>\n<h1>{experiment_name}</h1>\n"
 
 
 def gen_html_end() -> str:
-    return "</body>\n</html>"
+    """ Generates the end of an HTML file, closing the body and html tag. """
+    return "</body>\n</html>\n"
 
 
 def gen_token_listing(dictionary: pd.DataFrame) -> str:
+    """ Generates a listing of all token in the dictionary. Each token links to
+    its entry in the thesaurus. """
     assert 'token' in dictionary.columns
     return '<hr>\n<h2>Tokens</h2>\n' \
-           + ',\n'.join(f'<a href="#{t}">{t}</a>' for t in dictionary.token)
+           + ',\n'.join(f'<a href="#{t}">{t}</a>' for t in dictionary.token) \
+           + "\n"
 
 
 def gen_token_thesaurus(dictionary: pd.DataFrame) -> str:
+    """ Generates a thesaurus with one entry per token. Each entry lists all
+    corresponding senses and refers to sentences from the corpus. """
     assert 'token' in dictionary.columns
     entries = ['<hr>\n<h2>Thesaurus</h2>']
     last_token = None
@@ -39,6 +47,8 @@ def gen_token_thesaurus(dictionary: pd.DataFrame) -> str:
 
 
 def gen_sentence_listing(sentences: List[List[str]]):
+    """ Lists all sentences and adds the index as id. Requires a list of
+    sentences, where each sentence is a list of tokens. """
     sentence_listing = [
         f'<li><b id={s_id}>{s_id}: </b>'
         + ' '.join(s)
@@ -51,6 +61,7 @@ def gen_sentence_listing(sentences: List[List[str]]):
 def render_dictionary_in_html(dictionary: pd.DataFrame,
                               sentences: List[List[str]],
                               experiment_name: str) -> str:
+    """ Renders the given dictionary as an HTML file. """
     dictionary_sense_level = ag.pack_sentence_ids_and_token_ids(
         ag.unpack_and_sort_per_token_id(
             dictionary,
