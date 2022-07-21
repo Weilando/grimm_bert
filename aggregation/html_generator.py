@@ -38,10 +38,10 @@ def gen_token_thesaurus(dictionary: pd.DataFrame) -> str:
             if last_token is not None:
                 entries.append('</ul>')
             last_token = row.token
-            entries.append(f'<hr>\n<h3 id="{row.token}">{row.token}</h3>\n<ul>')
+            entries.append(f'<h3 id="{row.token}">{row.token}</h3>\n<ul>')
         entries.append(f'<li id="{row.sense}"><b>{row.sense}: </b>')
         entries.append(', '.join(
-            f'<a href="#{s}">Sentence {s}</a>' for s in row.sentence_id))
+            f'<a href="#S{s}">S{s}</a>' for s in row.sentence_id))
         entries.append('</li>')
     return '\n'.join(entries) + '</ul>\n'
 
@@ -50,7 +50,7 @@ def gen_sentence_listing(sentences: List[List[str]]):
     """ Lists all sentences and adds the index as id. Requires a list of
     sentences, where each sentence is a list of tokens. """
     sentence_listing = [
-        f'<li><b id={s_id}>{s_id}: </b>'
+        f'<li><b id="S{s_id}">S{s_id}: </b>'
         + ' '.join(s)
         + '</li>' for s_id, s in enumerate(sentences)]
     return '<hr>\n<h2>Sentences</h2>\n<ul>\n' \

@@ -58,10 +58,11 @@ class WsdevalPreprocessor(CorpusPreprocessor):
     def get_tagged_tokens(self) -> pd.DataFrame:
         tokens = [token.text.lower() for token in self.xml_tree.iter('token')]
         senses = [token.get('sense') for token in self.xml_tree.iter('token')]
+        pos_tags = [token.get('pos') for token in self.xml_tree.iter('token')]
         annotated_senses = [eval(token.get('tagged_sense'))
                             for token in self.xml_tree.iter('token')]
         return pd.DataFrame({'token': tokens, 'sense': senses,
-                             'tagged_sense': annotated_senses})
+                             'tagged_sense': annotated_senses, 'pos': pos_tags})
 
 
 if __name__ == '__main__':
