@@ -3,37 +3,48 @@
 [grimm_bert.py](/grimm_bert.py) provides pipelines for my master thesis about Automatic Dictionary Generation. Its `-h`
 option explains all possible arguments and default values.
 
+To get started, we recommend to run pipelines with the Euclidean linkage distance, the Average linkage criterion and a
+pre-trained general [CharacterBERT](https://github.com/helboukkouri/character-bert) model. 8-10 is a good search space
+for the distance threshold in the beginning. Let us give you an example call:
+
+```
+python grimm_bert.py first_experiments/Senseval2_d8 Senseval2 Euclidean Average -l INFO -d 8.0 -m './model_cache/general_character_bert'
+```
+
 ## Setup
 
 ### Conda Environment
 
-You can use [grimm_env.yml](/grimm_env.yml)
-to [create a conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)
-with all required python packages.
+Use [grimm_env.yml](/grimm_env.yml) to create a conda environment with all required python packages.
 
 ### Corpora
 
-Use the corresponding pre-processor to generate suitable input files for the pipeline.
-The input files from WSDEval need to be in [data/wsdeval_corpora](/data/wsdeval_corpora) and raw text corpora
-in [data/raw_text_corpora](/data/raw_text_corpora).
+Use the corresponding pre-processor to generate suitable input files for the pipeline. The input files from
+[WSDEval](http://lcl.uniroma1.it/wsdeval/) need to be in [data/wsdeval_corpora](/data/wsdeval_corpora) and raw text
+corpora in [data/raw_text_corpora](/data/raw_text_corpora).
 
-| Corpus      | Description                                                  | Pre-Processor                                              |
-|-------------|--------------------------------------------------------------|------------------------------------------------------------|
-| Toy         | Simple corpus for small tests.                               | [data.ToyPreprocessor](/data/toy_preprocessor.py)          |
-| WSDEval     | Evaluation corpora from SemEval 2007/13/15 and Senseval 2/3. | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py)  |
-| SemCor      | Semantic concordance with more than 800k tokens.             | [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py)  |
-| Shakespeare | Shakespeare's works in raw text.                             | [data.RawTextPreprocessor](/data/raw_text_preprocessor.py) |
+| Corpus      | Description                                     | Pre-Processor                                              |
+|-------------|-------------------------------------------------|------------------------------------------------------------|
+| Toy         | Simple corpus for small tests                   | [data.ToyPreprocessor](/data/toy_preprocessor.py)          |
+| SemEval2007 | Evaluation corpus from SemEval 2007, Task 17    | [data.WSDEvalPreprocessor](/data/wsdeval_preprocessor.py)  |
+| SemEval2013 | Evaluation corpus from SemEval 2013, Task 12    | [data.WSDEvalPreprocessor](/data/wsdeval_preprocessor.py)  |
+| SemEval2015 | Evaluation corpus from SemEval 2015, Task 13    | [data.WSDEvalPreprocessor](/data/wsdeval_preprocessor.py)  |
+| Senseval2   | All-Words task from Senseval 2                  | [data.WSDEvalPreprocessor](/data/wsdeval_preprocessor.py)  |
+| Senseval3   | All-Words task from Senseval 3                  | [data.WSDEvalPreprocessor](/data/wsdeval_preprocessor.py)  |
+| SemCor      | Semantic concordance (>800k tokens)             | [data.WSDEvalPreprocessor](/data/wsdeval_preprocessor.py)  |
+| Shakespeare | Shakespeare's works in raw text (>1,15M tokens) | [data.RawTextPreprocessor](/data/raw_text_preprocessor.py) |
 
-Please use [data.WsdevalPreprocessor](/data/wsdeval_preprocessor.py) to add a corpus in WSDEval's XML-format
-or [data.RawTextPreprocessor](/data/raw_text_preprocessor.py) for a raw text corpus.
+To add a new corpus, use [data.WSDEvalPreprocessor](/data/wsdeval_preprocessor.py) for a corpus in the WSDEval
+XML-format and [data.RawTextPreprocessor](/data/raw_text_preprocessor.py) for a raw text corpus.
 If both do not apply, create a new subclass of [data.CorpusPreprocessor](/data/corpus_preprocessor.py).
 
-### System Requirements
+### Models
 
-Our annotated Toy corpus with three sentences can be executed on a standard computer, e.g., with a dual-core CPU and 8GB
-RAM. For the SemCor corpus, we recommend 16GB RAM and one CPU. Please note that you mainly benefit from a multicore CPU
-or GPU while calculating word vectors with CharacterBERT. As the first pipeline run caches the word vectors for reuse,
-further runs do not need multiple cores.
+We support models with the [CharacterBERT](https://github.com/helboukkouri/character-bert) model architecture. The
+command line argument `--model_cache` specifies the model weights.
+
+To add new model architectures, you need to add its name to [model.ModelName](/model/model_name.py) and extend functions
+in [model/model_tools.py](/model/model_tools.py) and [aggregation/pipeline_blocks.py](/aggregation/pipeline_blocks.py).
 
 ## Pipelines
 
@@ -46,13 +57,12 @@ We take a list of sentences as input, where each sentence is a list of tokens (o
 4. Collect all corresponding word vectors and references per token.
 5. Perform Word Sense Discrimination per token with hierarchical clustering.
 
-Depending on the command line arguments, the clustering uses different criteria to cut the dendrogram.
-If several arguments are given, the pipeline performs the highest criterion from the table.
-We recommend to use the known senses from the ground truth, if given.
-Otherwise, choosing a maximum distance is most promising.
-Good starting ranges are 8-10 for Euclidean distances.
+Depending on the command line arguments, the clustering uses different criteria to cut the dendrogram. If several
+arguments are given, the pipeline performs the highest criterion from the table below. Using the known senses from the
+ground truth usually delivers the best results, but ignores tokens without labels. The second to best option is
+choosing a maximum distance is most promising, where good initial search ranges are 8-10 for Euclidean distances.
 
-| Argument             | Description                                                            |
+| Argument             | Criterion Description                                                  |
 |----------------------|------------------------------------------------------------------------|
 | `--known_senses`     | fit the number of senses from the ground truth                         |
 | `--max_distance d`   | cuts each dendrogram at a given maximum linkage distance               |
@@ -60,8 +70,8 @@ Good starting ranges are 8-10 for Euclidean distances.
 
 ## Evaluation
 
-- Our [evaluation notebook](/evaluation.ipynb) offers many plots and statistics that deliver insights like sense counts
-  and clustering metrics.
+- [evaluation notebook](/evaluation.ipynb) offers many plots and statistics that deliver insights like sense counts and
+  clustering metrics.
 - On the one hand, you can browse the generated dictionary in the last section of this notebook as a **DataFrame**. On
   the other hand, you can use the notebook or the `--export_html` pipeline option to generate an **HTML page** with the
   dictionary and corresponding sentences from the training corpus.
@@ -73,6 +83,15 @@ The software uses caches to enable executions in offline HPC environments and to
 - Models and tokenizers: [model_cache](/model_cache)
 - Corpora: [data/corpus_cache](/data/corpus_cache)
 - Word vector matrix and raw `id_map` per corpus: user defined result location
+
+## System Requirements
+
+The calculation of word vectors is the only part that benefits from multiple CPU cores. As the first pipeline run caches
+the word vectors for reuse, further runs do not need multiple cores. For most corpora and setups, 8GB RAM is sufficient.
+We recommend 16-24GB RAM for SemCor and 64GB RAM for Shakespeare.
+
+Pipeline runs with known sense counts only consider tokens that do have sense tags. This optimization reduces run time
+and memory footprint during the clustering phase.
 
 ## Tests
 

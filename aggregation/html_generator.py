@@ -31,6 +31,8 @@ def gen_token_thesaurus(dictionary: pd.DataFrame) -> str:
     """ Generates a thesaurus with one entry per token. Each entry lists all
     corresponding senses and refers to sentences from the corpus. """
     assert 'token' in dictionary.columns
+    assert 'sentence_id' in dictionary.columns
+
     entries = ['<hr>\n<h2>Thesaurus</h2>']
     last_token = None
     for row in dictionary.itertuples():
@@ -43,6 +45,7 @@ def gen_token_thesaurus(dictionary: pd.DataFrame) -> str:
         entries.append(', '.join(
             f'<a href="#S{s}">S{s}</a>' for s in row.sentence_id))
         entries.append('</li>')
+
     return '\n'.join(entries) + '</ul>\n'
 
 

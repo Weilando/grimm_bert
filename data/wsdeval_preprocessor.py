@@ -39,7 +39,7 @@ def add_senses_and_simplify_xml(xml_tree: ElementTree.Element,
     return xml_tree
 
 
-class WsdevalPreprocessor(CorpusPreprocessor):
+class WSDEvalPreprocessor(CorpusPreprocessor):
     def __init__(self, xml_tree: ElementTree.Element, gold_keys: pd.DataFrame,
                  corpus_name: CorpusName = CorpusName.SEMEVAL15,
                  corpus_cache_path: str = DEFAULT_CORPUS_CACHE_DIR):
@@ -70,7 +70,7 @@ if __name__ == '__main__':
                CorpusName.SENSEVAL2, CorpusName.SENSEVAL3, CorpusName.SEMCOR]
 
     for corpus in corpora:
-        wsd_eval_preprocessor = WsdevalPreprocessor(
+        wsd_eval_preprocessor = WSDEvalPreprocessor(
             get_xml_tree(f'data/wsdeval_corpora/{corpus}.data.xml'),
             get_gold_keys(f'data/wsdeval_corpora/{corpus}.gold.key.txt'),
             corpus)

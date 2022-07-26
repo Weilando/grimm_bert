@@ -28,7 +28,7 @@ TOY_XML_CORPUS = \
     </text></corpus>"""
 
 
-class TestWsdevalPreprocessor(TestCase):
+class TestWSDEvalPreprocessor(TestCase):
     @classmethod
     def setUp(cls):
         cls.xml_tree = ElementTree.fromstring(TOY_XML_CORPUS)
@@ -60,7 +60,7 @@ class TestWsdevalPreprocessor(TestCase):
     def test_get_sentences(self):
         with TemporaryDirectory() as tmp_dir:
             os.chdir(tmp_dir)
-            preprocessor = wp.WsdevalPreprocessor(self.xml_tree, self.gold_keys,
+            preprocessor = wp.WSDEvalPreprocessor(self.xml_tree, self.gold_keys,
                                                   corpus_cache_path=tmp_dir)
             sentences = preprocessor.get_sentences()
         expected_sentences = pd.DataFrame({
@@ -71,7 +71,7 @@ class TestWsdevalPreprocessor(TestCase):
     def test_get_tagged_tokens(self):
         with TemporaryDirectory() as tmp_dir:
             os.chdir(tmp_dir)
-            preprocessor = wp.WsdevalPreprocessor(self.xml_tree, self.gold_keys,
+            preprocessor = wp.WSDEvalPreprocessor(self.xml_tree, self.gold_keys,
                                                   corpus_cache_path=tmp_dir)
             tokens = preprocessor.get_tagged_tokens()
         expected_tokens = pd.DataFrame({
