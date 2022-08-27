@@ -22,6 +22,8 @@ Use [grimm_env.yml](/grimm_env.yml) to create a conda environment with all requi
 Use the corresponding pre-processor to generate suitable input files for the pipeline. The input files from
 [WSDEval](http://lcl.uniroma1.it/wsdeval/) need to be in [data/wsdeval_corpora](/data/wsdeval_corpora) and raw text
 corpora in [data/raw_text_corpora](/data/raw_text_corpora).
+[data/download_and_init_wsdeval_corpora.sh](/data/download_and_init_wsdeval_corpora.sh) downloads and extracts the
+WSDEval corpora accordingly for pre-processing.
 [UFSAC](https://github.com/getalp/UFSAC) provides additional compatible corpora and extends WSDEval.
 
 | Corpus      | Description                                     | Pre-Processor                                              |
